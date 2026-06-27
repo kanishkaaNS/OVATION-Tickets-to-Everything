@@ -40,7 +40,7 @@ function initConfirmation() {
             <p class="ticket-line__event-name">${line.eventTitle}</p>
             <p class="ticket-line__qty">${line.quantity} × ${line.tierName}</p>
           </div>
-          <span class="ticket-line__price">$${(line.price * line.quantity).toFixed(2)}</span>
+          <span class="ticket-line__price">${window.OvationData.formatCurrency(line.price * line.quantity)}</span>
         </div>
         <div class="ticket-line__meta">
           <div class="ticket-line__meta-item">
@@ -82,7 +82,7 @@ function initConfirmation() {
       </div>
       <div class="p-4 text-left bg-secondary/50 border-t border-border flex justify-between items-center text-sm">
         <span class="text-muted">Total Paid</span>
-        <span class="font-mono text-foreground font-medium">$${order.total.toFixed(2)}</span>
+        <span class="font-mono text-foreground font-medium">${window.OvationData.formatCurrency(order.total)}</span>
       </div>
     </div>
 

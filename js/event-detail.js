@@ -41,6 +41,8 @@ function initEventDetail() {
     return;
   }
 
+  window.OvationData.setSelectedCity(eventData.city);
+
   // Update document title
   document.title = `${eventData.title} | OVATION`;
 
@@ -48,7 +50,7 @@ function initEventDetail() {
   const dateStr = window.OvationData.formatEventDate(eventData.date);
 
   // Get related events (same category, excluding current)
-  const allEvents = window.OvationData.EVENTS;
+  const allEvents = window.OvationData.getEventsForCity(eventData.city);
   let related = allEvents.filter(e => e.category === eventData.category && e.slug !== eventData.slug).slice(0, 3);
   if (related.length === 0) {
     related = allEvents.filter(e => e.slug !== eventData.slug).slice(0, 3);
@@ -70,7 +72,7 @@ function initEventDetail() {
     </section>
 
     <div class="event-detail">
-      <a href="events.html" class="back-link">
+      <a href="events.html?city=${encodeURIComponent(eventData.city)}" class="back-link">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--md"><path d="m15 18-6-6 6-6"/></svg>
         All events
       </a>
@@ -157,7 +159,7 @@ function renderTicketSelector() {
         <div class="ticket-tier__info">
           <p class="ticket-tier__name">${tier.name}</p>
           <p class="ticket-tier__desc">${tier.description}</p>
-          <p class="ticket-tier__price">$${tier.price.toFixed(2)}</p>
+          <p class="ticket-tier__price">${window.OvationData.formatCurrency(tier.price)}</p>
         </div>
         
         ${soldOut ? `
@@ -181,7 +183,7 @@ function renderTicketSelector() {
     <div class="ticket-selector__footer">
       <div class="ticket-selector__summary">
         <span class="ticket-selector__count">${count} ${count === 1 ? 'ticket' : 'tickets'}</span>
-        <span class="ticket-selector__total">$${total.toFixed(2)}</span>
+        <span class="ticket-selector__total">${window.OvationData.formatCurrency(total)}</span>
       </div>
       
       <div class="ticket-selector__actions">

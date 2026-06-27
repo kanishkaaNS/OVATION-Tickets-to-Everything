@@ -15,14 +15,19 @@ class CartManager {
 
   // Persist to localStorage
   saveCart() {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.lines));
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.lines));
+    } catch (e) {
+      console.error('Failed to save cart', e);
+    }
     this.notifyListeners();
   }
 
   loadCart() {
     try {
       const stored = localStorage.getItem(CART_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
+      const lines = stored ? JSON.parse(stored) : [];
+      return this.sanitizeLines(lines);
     } catch (e) {
       console.error('Failed to load cart', e);
       return [];
@@ -31,7 +36,11 @@ class CartManager {
 
   saveOrder(order) {
     this.lastOrder = order;
-    localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(order));
+    try {
+      localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(order));
+    } catch (e) {
+      console.error('Failed to save order', e);
+    }
   }
 
   loadOrder() {
@@ -56,16 +65,44 @@ class CartManager {
     this.listeners.forEach(callback => callback(this));
   }
 
+  sanitizeLines(lines) {
+    if (!Array.isArray(lines)) return [];
+    if (!window.OvationData) return lines;
+
+    return lines
+      .map(line => {
+        const event = window.OvationData.getEvent(line.eventSlug);
+        if (!event) return null;
+
+        const tier = event.tiers.find(t => t.id === line.tierId);
+        if (!tier) return null;
+
+        return {
+          ...line,
+          eventTitle: event.title,
+          eventImage: event.image,
+          eventDate: event.date,
+          venue: event.venue,
+          city: event.city,
+          tierName: tier.name,
+          price: tier.price,
+          quantity: Math.max(1, Math.min(Number(line.quantity) || 1, 8)),
+        };
+      })
+      .filter(Boolean);
+  }
+
   // Cart actions
   addLine(newLine) {
+    const quantity = Math.max(1, Math.min(Number(newLine.quantity) || 1, 8));
     const existingIndex = this.lines.findIndex(
       l => l.eventSlug === newLine.eventSlug && l.tierId === newLine.tierId
     );
 
     if (existingIndex >= 0) {
-      this.lines[existingIndex].quantity += newLine.quantity;
+      this.lines[existingIndex].quantity = Math.min(this.lines[existingIndex].quantity + quantity, 8);
     } else {
-      this.lines.push(newLine);
+      this.lines.push({ ...newLine, quantity });
     }
     this.saveCart();
   }
@@ -103,7 +140,7 @@ class CartManager {
   }
 
   get fees() {
-    return Math.round(this.subtotal * SERVICE_FEE_RATE * 100) / 100;
+    return Math.round(this.subtotal * SERVICE_FEE_RATE);
   }
 
   get total() {

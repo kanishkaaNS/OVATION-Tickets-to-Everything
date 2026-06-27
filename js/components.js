@@ -9,6 +9,7 @@ const Components = {
     x: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--xl"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
     ticket: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--md"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>`,
     ticketLg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base nav-icon"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>`,
+    mapPin: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--md"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`,
     home: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base nav-icon"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
     compass: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base nav-icon"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
     arrowUp: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base nav-icon"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>`,
@@ -21,6 +22,10 @@ const Components = {
     const isLight = overlay; // If overlay is true, initially light text
     const headerClass = isLight ? "site-header site-header--transparent site-header--light" : "site-header site-header--solid site-header--dark";
     const cartCount = window.OvationCart.itemCount;
+    const selectedCity = window.OvationData ? window.OvationData.getSelectedCity() : "Ahmedabad";
+    const cityOptions = window.OvationData
+      ? window.OvationData.POPULAR_CITIES.map(city => `<option value="${city}" ${city === selectedCity ? "selected" : ""}>${city}</option>`).join("")
+      : "";
     
     return `
       <header class="${headerClass}" id="main-header">
@@ -35,6 +40,13 @@ const Components = {
           </nav>
 
           <div class="site-header__actions">
+            <label class="site-header__city">
+              ${this.icons.mapPin}
+              <select id="header-city-select" class="site-header__city-select" aria-label="Select city">
+                ${cityOptions}
+              </select>
+            </label>
+
             <a href="checkout.html" class="site-header__cart-btn" aria-label="View cart">
               ${this.icons.ticket}
               <span class="site-header__cart-label">Cart</span>
@@ -49,6 +61,12 @@ const Components = {
 
         <div class="site-header__mobile-menu" id="mobile-menu">
           <nav class="site-header__mobile-nav">
+            <label class="site-header__mobile-city">
+              <span>City</span>
+              <select id="mobile-city-select" class="site-header__mobile-city-select" aria-label="Select city">
+                ${cityOptions}
+              </select>
+            </label>
             <a href="events.html" class="site-header__mobile-link">Events</a>
             <a href="events.html?category=Music" class="site-header__mobile-link">Music</a>
             <a href="events.html?category=Sports" class="site-header__mobile-link">Sports</a>
@@ -146,6 +164,7 @@ const Components = {
     if (!window.OvationData) return '';
     const date = window.OvationData.formatEventDate(event.date);
     const fromPrice = Math.min(...event.tiers.map((t) => t.price));
+    const formattedPrice = window.OvationData.formatCurrency(fromPrice);
 
     return `
       <a href="event.html?slug=${event.slug}" class="event-card group">
@@ -174,7 +193,7 @@ const Components = {
         </div>
         
         <p class="event-card__price">
-          From <strong>$${fromPrice}</strong>
+          From <strong>${formattedPrice}</strong>
         </p>
       </a>
     `;
@@ -203,6 +222,7 @@ const Components = {
 
     // 4. Setup Header logic
     this.setupHeader(opts.overlayHeader);
+    this.setupCityControls();
     
     // 5. Setup Floating Nav logic
     this.setupFloatingNav();
@@ -259,6 +279,33 @@ const Components = {
         }
       });
     }
+  },
+
+  setupCityControls() {
+    if (!window.OvationData) return;
+
+    const selects = document.querySelectorAll('#header-city-select, #mobile-city-select');
+    const syncSelects = (city) => {
+      selects.forEach(select => {
+        select.value = city;
+      });
+    };
+
+    selects.forEach(select => {
+      select.addEventListener('change', () => {
+        const city = window.OvationData.setSelectedCity(select.value);
+        syncSelects(city);
+
+        const path = window.location.pathname.split('/').pop() || 'index.html';
+        if (path === 'event.html') {
+          window.location.href = 'events.html';
+        }
+      });
+    });
+
+    window.addEventListener('ovation:city-change', (event) => {
+      syncSelects(event.detail.city);
+    });
   },
 
   setupFloatingNav() {
@@ -335,8 +382,16 @@ const Components = {
   },
 
   setupFadeImages() {
-    const images = document.querySelectorAll('[data-fade-image] img');
+    const images = document.querySelectorAll('[data-fade-image] img:not([data-fade-ready])');
     if (!images.length) return;
+
+    if (!('IntersectionObserver' in window)) {
+      images.forEach(img => {
+        img.dataset.fadeReady = 'true';
+        img.classList.add('is-loaded');
+      });
+      return;
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -345,10 +400,11 @@ const Components = {
             const img = entry.target;
             
             // Wait for load if not already complete
-            if (img.complete) {
+            if (img.complete && img.naturalWidth > 0) {
               img.classList.add('is-loaded');
             } else {
               img.onload = () => img.classList.add('is-loaded');
+              img.onerror = () => img.classList.add('is-loaded');
             }
             
             observer.unobserve(img);
@@ -358,7 +414,16 @@ const Components = {
       { threshold: 0.1, rootMargin: "50px" }
     );
 
-    images.forEach(img => observer.observe(img));
+    images.forEach(img => {
+      img.dataset.fadeReady = 'true';
+
+      if (img.complete && img.naturalWidth > 0) {
+        img.classList.add('is-loaded');
+        return;
+      }
+
+      observer.observe(img);
+    });
   }
 };
 

@@ -27,6 +27,11 @@ function initEventsBrowser() {
   // Get initial category from URL
   const urlParams = new URLSearchParams(window.location.search);
   const urlCategory = urlParams.get('category');
+  const urlCity = urlParams.get('city');
+
+  if (urlCity) {
+    window.OvationData.setSelectedCity(urlCity);
+  }
   
   const validCategory = window.OvationData.CATEGORIES.includes(urlCategory);
   let activeCategory = validCategory ? urlCategory : 'All';
@@ -58,6 +63,7 @@ function initEventsBrowser() {
         } else {
           url.searchParams.set('category', activeCategory);
         }
+        url.searchParams.set('city', window.OvationData.getSelectedCity());
         window.history.pushState({}, '', url);
 
         // Re-render
@@ -68,13 +74,14 @@ function initEventsBrowser() {
   }
 
   function renderEvents() {
-    const allEvents = window.OvationData.EVENTS;
+    const selectedCity = window.OvationData.getSelectedCity();
+    const allEvents = window.OvationData.getEventsForCity(selectedCity);
     const filteredEvents = activeCategory === 'All' 
       ? allEvents 
       : allEvents.filter(e => e.category === activeCategory);
 
     // Update count
-    countEl.textContent = `${filteredEvents.length} ${filteredEvents.length === 1 ? 'event' : 'events'}`;
+    countEl.textContent = `${filteredEvents.length} ${filteredEvents.length === 1 ? 'event' : 'events'} in ${selectedCity}`;
 
     if (filteredEvents.length > 0) {
       grid.classList.remove('hidden');
@@ -84,7 +91,7 @@ function initEventsBrowser() {
       grid.innerHTML = filteredEvents.map((event, i) => {
         const delay = Math.min(i * 60, 480);
         return `
-          <div class="animate-reveal-up" style="animation-delay: ${delay}ms; opacity: 0; animation-fill-mode: forwards;">
+          <div class="animate-reveal-up" style="animation-delay: ${delay}ms; animation-fill-mode: forwards;">
             ${window.OvationComponents.renderEventCard(event)}
           </div>
         `;
@@ -95,9 +102,17 @@ function initEventsBrowser() {
     } else {
       grid.classList.add('hidden');
       grid.innerHTML = '';
+      noEventsMsg.textContent = `No ${activeCategory === 'All' ? '' : activeCategory.toLowerCase() + ' '}events in ${selectedCity} yet. Try another category or city.`;
       noEventsMsg.classList.remove('hidden');
     }
   }
+
+  window.addEventListener('ovation:city-change', () => {
+    const url = new URL(window.location);
+    url.searchParams.set('city', window.OvationData.getSelectedCity());
+    window.history.replaceState({}, '', url);
+    renderEvents();
+  });
 
   // Initial render
   renderFilters();

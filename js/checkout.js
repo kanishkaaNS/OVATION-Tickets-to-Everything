@@ -60,7 +60,7 @@ function initCheckout() {
               </div>
               
               <div class="cart-item__price-remove">
-                <span class="cart-item__price">$${(line.price * line.quantity).toFixed(2)}</span>
+                <span class="cart-item__price">${window.OvationData.formatCurrency(line.price * line.quantity)}</span>
                 <button type="button" class="cart-item__remove-btn" onclick="removeCartLine('${line.eventSlug}', '${line.tierId}')" aria-label="Remove item">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--sm"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                 </button>
@@ -121,7 +121,7 @@ function initCheckout() {
               </div>
 
               <button type="submit" class="btn btn--dark w-full mt-8" id="submit-order-btn">
-                Pay $${total.toFixed(2)}
+                Pay ${window.OvationData.formatCurrency(total)}
               </button>
             </form>
           </div>
@@ -136,15 +136,15 @@ function initCheckout() {
             <div class="order-summary__body">
               <div class="order-summary__row">
                 <span>Subtotal</span>
-                <span class="order-summary__value">$${subtotal.toFixed(2)}</span>
+                <span class="order-summary__value">${window.OvationData.formatCurrency(subtotal)}</span>
               </div>
               <div class="order-summary__row">
                 <span>Service Fee</span>
-                <span class="order-summary__value">$${fees.toFixed(2)}</span>
+                <span class="order-summary__value">${window.OvationData.formatCurrency(fees)}</span>
               </div>
               <div class="order-summary__total-row">
                 <span class="order-summary__total-label">Total</span>
-                <span class="order-summary__total-value">$${total.toFixed(2)}</span>
+                <span class="order-summary__total-value">${window.OvationData.formatCurrency(total)}</span>
               </div>
             </div>
             <div class="order-summary__footer">

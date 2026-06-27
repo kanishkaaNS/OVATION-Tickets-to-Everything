@@ -57,12 +57,29 @@
       </div>
     </section>
 
+    <!-- POPULAR CITIES SECTION -->
+    <section class="section section--compact">
+      <div class="section__header" data-reveal>
+        <div>
+          <p class="section__label">Choose your city</p>
+          <h2 class="section__title">Popular cities</h2>
+        </div>
+        <button type="button" class="section__view-all city-current-btn" id="current-city-button">
+          <span id="current-city-label">Ahmedabad</span>
+        </button>
+      </div>
+
+      <div class="popular-cities-grid" id="popular-cities-grid" data-reveal data-stagger="0.05">
+        <!-- City cards injected by JS -->
+      </div>
+    </section>
+
     <!-- FEATURED EVENTS SECTION -->
     <section class="section">
       <div class="section__header" data-reveal>
         <div>
           <p class="section__label">On sale now</p>
-          <h2 class="section__title">Trending events</h2>
+          <h2 class="section__title" id="trending-events-title">Trending events</h2>
         </div>
         <a href="events.html" class="section__view-all">
           View all
