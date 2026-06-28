@@ -27,7 +27,38 @@
 
       <div id="checkout-content">
         <!-- Will be populated by JS if cart has items, otherwise empty state -->
-        <div class="py-20 text-center text-muted">Loading cart...</div>
+        <div class="skeleton-line skeleton-line--heading"></div>
+        <div class="checkout__grid">
+          <div>
+            <div class="skeleton-line skeleton-line--title"></div>
+            <div class="mt-6 flex flex-col border-t border-border">
+              <div class="cart-item" aria-hidden="true">
+                <div class="cart-item__image-wrap skeleton-block"></div>
+                <div class="cart-item__details">
+                  <div class="skeleton-line skeleton-line--title"></div>
+                  <div class="skeleton-line skeleton-line--short mt-2"></div>
+                  <div class="skeleton-line mt-4"></div>
+                </div>
+              </div>
+              <div class="cart-item" aria-hidden="true">
+                <div class="cart-item__image-wrap skeleton-block"></div>
+                <div class="cart-item__details">
+                  <div class="skeleton-line skeleton-line--title"></div>
+                  <div class="skeleton-line skeleton-line--short mt-2"></div>
+                  <div class="skeleton-line mt-4"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-summary__header skeleton-block"></div>
+            <div class="order-summary__body">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line skeleton-line--price"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>

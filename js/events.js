@@ -86,19 +86,23 @@ function initEventsBrowser() {
     if (filteredEvents.length > 0) {
       grid.classList.remove('hidden');
       noEventsMsg.classList.add('hidden');
+      grid.innerHTML = window.OvationComponents.renderEventCardSkeleton(Math.min(filteredEvents.length, 6));
 
-      // Generate HTML
-      grid.innerHTML = filteredEvents.map((event, i) => {
-        const delay = Math.min(i * 60, 480);
-        return `
-          <div class="animate-reveal-up" style="animation-delay: ${delay}ms; animation-fill-mode: forwards;">
-            ${window.OvationComponents.renderEventCard(event)}
-          </div>
-        `;
-      }).join('');
+      requestAnimationFrame(() => {
+        // Generate HTML
+        grid.innerHTML = filteredEvents.map((event, i) => {
+          const delay = Math.min(i * 45, 360);
+          return `
+            <div class="animate-reveal-up" style="animation-delay: ${delay}ms; animation-fill-mode: forwards;">
+              ${window.OvationComponents.renderEventCard(event)}
+            </div>
+          `;
+        }).join('');
 
-      // Setup lazy loading for newly inserted images
-      window.OvationComponents.setupFadeImages();
+        // Setup lazy loading for newly inserted images
+        window.OvationComponents.setupFadeImages();
+        window.OvationAnimations?.initReveals?.();
+      });
     } else {
       grid.classList.add('hidden');
       grid.innerHTML = '';

@@ -14,9 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Render Categories
   renderCategories();
 
-  window.addEventListener('ovation:city-change', () => {
-    renderPopularCities();
-    renderFeaturedEvents();
+  window.addEventListener('ovation:city-change', (event) => {
+    renderPopularCities(event.detail.city);
+    renderFeaturedEvents(event.detail.city);
     renderCategories();
   });
 
@@ -27,35 +27,39 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeroParallax();
 });
 
-function renderFeaturedEvents() {
+function renderFeaturedEvents(city) {
   const grid = document.getElementById('featured-events-grid');
   if (!grid || !window.OvationData) return;
 
-  const selectedCity = window.OvationData.getSelectedCity();
+  const selectedCity = city || window.OvationData.getSelectedCity();
   const title = document.getElementById('trending-events-title');
-  const featured = window.OvationData.getCurrentCityEvents();
+  const featured = window.OvationData.getEventsForCity(selectedCity);
 
   if (title) {
     title.textContent = `Trending events in ${selectedCity}`;
   }
   
-  const html = featured.map(event => `
-    <div>
-      ${window.OvationComponents.renderEventCard(event)}
-    </div>
-  `).join('');
-  
-  grid.innerHTML = html;
+  grid.innerHTML = window.OvationComponents.renderEventCardSkeleton(Math.min(featured.length || 3, 6));
 
-  window.OvationComponents.setupFadeImages();
+  requestAnimationFrame(() => {
+    const html = featured.map(event => `
+      <div class="event-card-shell">
+        ${window.OvationComponents.renderEventCard(event)}
+      </div>
+    `).join('');
+    
+    grid.innerHTML = html;
+    window.OvationComponents.setupFadeImages();
+    window.OvationAnimations?.initReveals?.();
+  });
 }
 
-function renderPopularCities() {
+function renderPopularCities(city) {
   const grid = document.getElementById('popular-cities-grid');
   const currentLabel = document.getElementById('current-city-label');
   if (!grid || !window.OvationData) return;
 
-  const selectedCity = window.OvationData.getSelectedCity();
+  const selectedCity = city || window.OvationData.getSelectedCity();
 
   if (currentLabel) {
     currentLabel.textContent = selectedCity;
@@ -64,13 +68,16 @@ function renderPopularCities() {
   grid.innerHTML = window.OvationData.POPULAR_CITIES.map(city => `
     <button type="button" class="popular-city-card ${city === selectedCity ? 'is-active' : ''}" data-city="${city}">
       <span class="popular-city-card__name">${city}</span>
-      <span class="popular-city-card__count">3 events</span>
+      <span class="popular-city-card__count">${window.OvationData.getEventsForCity(city).length} events</span>
     </button>
   `).join('');
 
   grid.querySelectorAll('[data-city]').forEach(button => {
     button.addEventListener('click', () => {
-      window.OvationData.setSelectedCity(button.getAttribute('data-city'));
+      const city = button.getAttribute('data-city');
+      renderPopularCities(city);
+      renderFeaturedEvents(city);
+      window.OvationData.setSelectedCity(city);
     });
   });
 }

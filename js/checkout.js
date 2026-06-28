@@ -17,6 +17,8 @@ function initCheckout() {
   const container = document.getElementById('checkout-content');
   if (!container || !window.OvationCart) return;
 
+  container.innerHTML = window.OvationComponents.renderCheckoutSkeleton();
+
   function render() {
     const lines = window.OvationCart.lines;
 
@@ -183,7 +185,7 @@ function initCheckout() {
   }
 
   // Initial render
-  render();
+  requestAnimationFrame(render);
 
   // Listen for cart changes (if updated via floating nav, etc)
   window.OvationCart.subscribe(() => {

@@ -62,8 +62,6 @@ const Animations = {
   // Page Transition
   // ------------------------------------------------------------------------
   initPageTransition() {
-    if (this.reducedMotion || typeof gsap === 'undefined') return;
-
     // Create overlay element if it doesn't exist
     let overlay = document.querySelector('.page-transition-overlay');
     if (!overlay) {
@@ -76,19 +74,25 @@ const Animations = {
     const mainContent = document.querySelector('main');
     if (!mainContent) return;
 
-    // Reset styles for GSAP
-    gsap.set(overlay, { scaleY: 1, transformOrigin: "top" });
-    gsap.set(mainContent, { opacity: 0, y: 24 });
+    if (this.reducedMotion) {
+      mainContent.style.opacity = '1';
+      return;
+    }
 
-    // Entrance animation timeline
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-    tl.to(overlay, { scaleY: 0, duration: 0.6, ease: "power4.inOut" })
-      .to(mainContent, { opacity: 1, y: 0, duration: 0.7 }, "-=0.35");
-      
-    // Handle link clicks for exit animation
-    // Note: In a true static site, intercepting clicks and delaying navigation
-    // is tricky and can break expected browser behavior (like opening in new tab).
-    // For this conversion, we only handle the *entrance* animation automatically on load.
+    if (typeof gsap !== 'undefined') {
+      // Reset styles for GSAP
+      gsap.set(overlay, { opacity: 1 });
+      gsap.set(mainContent, { opacity: 0, y: 16 });
+
+      // Entrance animation timeline
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.to(overlay, { opacity: 0, duration: 0.28, ease: "power2.out" })
+        .to(mainContent, { opacity: 1, y: 0, duration: 0.5 }, "-=0.12");
+    } else {
+      overlay.style.opacity = '0';
+      mainContent.classList.add('page-enter');
+      requestAnimationFrame(() => mainContent.classList.add('is-visible'));
+    }
   },
 
   // ------------------------------------------------------------------------
@@ -152,11 +156,37 @@ const Animations = {
   // Scroll Reveal Animations
   // ------------------------------------------------------------------------
   initReveals() {
-    if (this.reducedMotion || typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+    if (this.reducedMotion) return;
 
     const revealContainers = document.querySelectorAll('[data-reveal]');
+
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+      if (!('IntersectionObserver' in window)) {
+        revealContainers.forEach(container => container.classList.add('is-visible'));
+        return;
+      }
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -10% 0px" });
+
+      revealContainers.forEach(container => {
+        if (container.dataset.revealReady === 'true') return;
+        container.dataset.revealReady = 'true';
+        container.classList.add('reveal-fallback');
+        observer.observe(container);
+      });
+      return;
+    }
     
     revealContainers.forEach(container => {
+      if (container.dataset.revealReady === 'true') return;
+      container.dataset.revealReady = 'true';
+
       const direction = container.getAttribute('data-direction') || 'up';
       const distance = parseInt(container.getAttribute('data-distance')) || 48;
       const staggerAmount = parseFloat(container.getAttribute('data-stagger')) || 0;

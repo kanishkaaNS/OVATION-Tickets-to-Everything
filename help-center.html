@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help Center | OVATION</title>
+  <meta name="description" content="Get help with Ovation ticket bookings." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+</head>
+<body class="bg-background">
+  <div id="header-container"></div>
+
+  <main class="min-h-screen">
+    <article class="content-page">
+      <p class="content-page__label">Help Center</p>
+      <h1 class="content-page__title">Help for booking and checkout.</h1>
+      <p class="content-page__intro">
+        Find quick answers for selecting a city, adding tickets to your cart, completing checkout, and viewing order confirmation.
+      </p>
+
+      <div class="content-page__sections">
+        <section class="content-page__section">
+          <h2>Booking tickets</h2>
+          <p>Choose your city, open an event, select ticket quantities, and use Add to cart or Checkout to continue.</p>
+        </section>
+        <section class="content-page__section">
+          <h2>Cart and checkout</h2>
+          <p>You can update quantities, remove tickets, and complete the demo payment form to generate an order confirmation.</p>
+        </section>
+        <section class="content-page__section">
+          <h2>Changing cities</h2>
+          <p>Use the city selector in the header to refresh event listings for another popular city.</p>
+        </section>
+      </div>
+    </article>
+  </main>
+
+  <div id="footer-container"></div>
+  <div id="floating-nav-container"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/animations.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      window.OvationComponents.init({ overlayHeader: false });
+      window.OvationAnimations.init();
+    });
+  </script>
+</body>
+</html>

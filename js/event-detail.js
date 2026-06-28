@@ -23,6 +23,8 @@ function initEventDetail() {
   const container = document.getElementById('event-content-container');
   if (!container || !window.OvationData) return;
 
+  container.innerHTML = window.OvationComponents.renderEventDetailSkeleton();
+
   // Get slug from URL
   const urlParams = new URLSearchParams(window.location.search);
   const slug = urlParams.get('slug');
@@ -59,11 +61,12 @@ function initEventDetail() {
   // Initialize quantities object
   eventData.tiers.forEach(t => { quantities[t.id] = 0; });
 
-  // Generate HTML
-  container.innerHTML = `
+  requestAnimationFrame(() => {
+    // Generate HTML
+    container.innerHTML = `
     <!-- Hero banner -->
     <section class="event-hero">
-      <img src="${eventData.image}" alt="${eventData.title}" class="event-hero__image" />
+      <img src="${eventData.image}" alt="${eventData.title}" class="event-hero__image" decoding="async" />
       <div class="event-hero__gradient"></div>
       <div class="event-hero__content">
         <span class="event-hero__category">${eventData.category}</span>
@@ -134,11 +137,13 @@ function initEventDetail() {
     </div>
   `;
 
-  // Initial render of ticket selector
-  renderTicketSelector();
-  
-  // Setup fade images for related events
-  window.OvationComponents.setupFadeImages();
+    // Initial render of ticket selector
+    renderTicketSelector();
+    
+    // Setup fade images for related events
+    window.OvationComponents.setupFadeImages();
+    window.OvationAnimations?.initReveals?.();
+  });
 }
 
 function renderTicketSelector() {

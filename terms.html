@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms | OVATION</title>
+  <meta name="description" content="Ovation ticketing terms." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+</head>
+<body class="bg-background">
+  <div id="header-container"></div>
+
+  <main class="min-h-screen">
+    <article class="content-page">
+      <p class="content-page__label">Terms</p>
+      <h1 class="content-page__title">Simple demo terms for ticket booking.</h1>
+      <p class="content-page__intro">
+        These placeholder terms explain how the demo booking experience is intended to work.
+      </p>
+
+      <div class="content-page__sections">
+        <section class="content-page__section">
+          <h2>Ticket purchases</h2>
+          <p>Tickets shown on this site are sample listings. Prices, availability, venues, and event details are used for demonstration purposes.</p>
+        </section>
+        <section class="content-page__section">
+          <h2>Orders</h2>
+          <p>Completing checkout creates a local demo confirmation. No real payment is processed and no real ticket is issued.</p>
+        </section>
+        <section class="content-page__section">
+          <h2>Event information</h2>
+          <p>Event details may change in a real ticketing product. Always review the selected event, city, venue, date, and ticket tier before checkout.</p>
+        </section>
+      </div>
+    </article>
+  </main>
+
+  <div id="footer-container"></div>
+  <div id="floating-nav-container"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/animations.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      window.OvationComponents.init({ overlayHeader: false });
+      window.OvationAnimations.init();
+    });
+  </script>
+</body>
+</html>

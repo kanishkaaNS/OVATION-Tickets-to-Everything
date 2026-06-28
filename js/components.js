@@ -79,8 +79,7 @@ const Components = {
 
   // Render the footer
   renderFooter() {
-    const currentYear = new Date().getFullYear();
-    const categories = window.OvationData ? window.OvationData.CATEGORIES.slice(0, 5) : ["Music", "Conference", "Comedy", "Arts", "Food"];
+    const categories = window.OvationData ? window.OvationData.CATEGORIES : ["Music", "Comedy", "Arts", "Food", "Sports", "Movies"];
     
     const categoryLinks = categories.map(c => `
       <li>
@@ -109,17 +108,16 @@ const Components = {
             <div>
               <p class="site-footer__section-title">Company</p>
               <ul class="site-footer__links">
-                <li><a href="#" class="site-footer__link">About</a></li>
-                <li><a href="#" class="site-footer__link">Sell Tickets</a></li>
-                <li><a href="#" class="site-footer__link">Help Center</a></li>
-                <li><a href="#" class="site-footer__link">Terms</a></li>
+                <li><a href="about.html" class="site-footer__link">About</a></li>
+                <li><a href="sell-tickets.html" class="site-footer__link">Sell Tickets</a></li>
+                <li><a href="help-center.html" class="site-footer__link">Help Center</a></li>
+                <li><a href="terms.html" class="site-footer__link">Terms</a></li>
               </ul>
             </div>
           </div>
 
           <div class="site-footer__bottom">
-            <p>© ${currentYear} Ovation Tickets. All rights reserved.</p>
-            <p>A demo experience built on v0, converted to vanilla.</p>
+            <p>© 2026 Ovation Tickets. All rights reserved.</p>
           </div>
         </div>
       </footer>
@@ -175,6 +173,7 @@ const Components = {
               alt="${event.title}" 
               class="event-card__image fade-image" 
               loading="lazy"
+              decoding="async"
             />
           </div>
           <div class="event-card__date">
@@ -196,6 +195,84 @@ const Components = {
           From <strong>${formattedPrice}</strong>
         </p>
       </a>
+    `;
+  },
+
+  renderEventCardSkeleton(count = 3) {
+    return Array.from({ length: count }, () => `
+      <div class="event-card event-card--skeleton" aria-hidden="true">
+        <div class="event-card__image-wrap skeleton-block"></div>
+        <div class="event-card__info">
+          <div class="w-full">
+            <div class="skeleton-line skeleton-line--title"></div>
+            <div class="skeleton-line skeleton-line--short"></div>
+          </div>
+        </div>
+        <div class="skeleton-line skeleton-line--price"></div>
+      </div>
+    `).join('');
+  },
+
+  renderEventDetailSkeleton() {
+    return `
+      <section class="event-hero skeleton-block"></section>
+      <div class="event-detail">
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="event-detail__grid mt-8">
+          <div>
+            <div class="event-meta">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line skeleton-line--title"></div>
+            </div>
+            <div class="mt-8">
+              <div class="skeleton-line skeleton-line--title"></div>
+              <div class="skeleton-paragraph mt-4"></div>
+              <div class="skeleton-paragraph mt-4"></div>
+            </div>
+          </div>
+          <div class="ticket-selector">
+            <div class="ticket-selector__header skeleton-block"></div>
+            <div class="p-5">
+              <div class="skeleton-line skeleton-line--title"></div>
+              <div class="skeleton-line mt-4"></div>
+              <div class="skeleton-line mt-4"></div>
+              <div class="skeleton-line skeleton-line--price mt-8"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderCheckoutSkeleton() {
+    return `
+      <div class="skeleton-line skeleton-line--heading"></div>
+      <div class="checkout__grid">
+        <div>
+          <div class="skeleton-line skeleton-line--title"></div>
+          <div class="mt-6 flex flex-col border-t border-border">
+            ${Array.from({ length: 2 }, () => `
+              <div class="cart-item" aria-hidden="true">
+                <div class="cart-item__image-wrap skeleton-block"></div>
+                <div class="cart-item__details">
+                  <div class="skeleton-line skeleton-line--title"></div>
+                  <div class="skeleton-line skeleton-line--short mt-2"></div>
+                  <div class="skeleton-line mt-4"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="order-summary">
+          <div class="order-summary__header skeleton-block"></div>
+          <div class="order-summary__body">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line skeleton-line--price"></div>
+          </div>
+        </div>
+      </div>
     `;
   },
 
@@ -232,6 +309,9 @@ const Components = {
 
     // 7. Setup Image lazy loading/fading
     this.setupFadeImages();
+
+    // 8. Shared micro interactions
+    this.setupInteractionPolish();
   },
 
   setupHeader(isOverlay) {
@@ -398,13 +478,17 @@ const Components = {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const img = entry.target;
+            const markLoaded = () => {
+              img.classList.add('is-loaded');
+              img.closest('.fade-image-wrap')?.classList.add('image-is-loaded');
+            };
             
             // Wait for load if not already complete
             if (img.complete && img.naturalWidth > 0) {
-              img.classList.add('is-loaded');
+              markLoaded();
             } else {
-              img.onload = () => img.classList.add('is-loaded');
-              img.onerror = () => img.classList.add('is-loaded');
+              img.onload = markLoaded;
+              img.onerror = markLoaded;
             }
             
             observer.unobserve(img);
@@ -419,10 +503,76 @@ const Components = {
 
       if (img.complete && img.naturalWidth > 0) {
         img.classList.add('is-loaded');
+        img.closest('.fade-image-wrap')?.classList.add('image-is-loaded');
         return;
       }
 
       observer.observe(img);
+    });
+  },
+
+  setupInteractionPolish() {
+    this.setupPressedFeedback();
+    this.setupInternalPageTransitions();
+  },
+
+  setupPressedFeedback() {
+    const interactiveSelector = '.btn, .filter-btn, .popular-city-card, .qty-control__btn, .cart-item__qty-btn, .cart-item__remove-btn, .site-header__cart-btn, .floating-nav__link, .floating-nav__top-btn';
+
+    document.addEventListener('pointerdown', (event) => {
+      const target = event.target.closest(interactiveSelector);
+      if (!target || target.disabled) return;
+      target.classList.add('is-pressing');
+    });
+
+    document.addEventListener('pointerup', (event) => {
+      const target = event.target.closest(interactiveSelector);
+      if (!target) return;
+      window.setTimeout(() => target.classList.remove('is-pressing'), 120);
+    });
+
+    document.addEventListener('pointercancel', () => {
+      document.querySelectorAll('.is-pressing').forEach(el => el.classList.remove('is-pressing'));
+    });
+  },
+
+  setupInternalPageTransitions() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    document.addEventListener('click', (event) => {
+      const link = event.target.closest('a[href]');
+      if (!link) return;
+
+      const href = link.getAttribute('href');
+      const isModifiedClick = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+      if (
+        isModifiedClick ||
+        link.target ||
+        link.hasAttribute('download') ||
+        !href ||
+        href.startsWith('#') ||
+        href.startsWith('mailto:') ||
+        href.startsWith('tel:')
+      ) return;
+
+      const url = new URL(href, window.location.href);
+      if (url.origin !== window.location.origin || url.href === window.location.href) return;
+
+      event.preventDefault();
+
+      let overlay = document.querySelector('.page-transition-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'page-transition-overlay';
+        document.body.appendChild(overlay);
+      }
+
+      document.body.classList.add('is-page-leaving');
+      overlay.classList.add('is-active');
+
+      window.setTimeout(() => {
+        window.location.href = url.href;
+      }, 160);
     });
   }
 };
