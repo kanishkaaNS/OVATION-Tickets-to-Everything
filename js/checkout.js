@@ -17,6 +17,18 @@ function initCheckout() {
   const container = document.getElementById('checkout-content');
   if (!container || !window.OvationCart) return;
 
+  // URL fallback for cart when localStorage is blocked
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlCart = urlParams.get('cart');
+  if (urlCart && window.OvationCart.lines.length === 0) {
+    try {
+      const parsedLines = JSON.parse(decodeURIComponent(urlCart));
+      window.OvationCart.lines = window.OvationCart.sanitizeLines(parsedLines);
+      // Try to persist it so reloading doesn't lose it if session storage works
+      window.OvationCart.saveCart();
+    } catch (e) {}
+  }
+
   container.innerHTML = window.OvationComponents.renderCheckoutSkeleton();
 
   function render() {
@@ -179,12 +191,13 @@ function initCheckout() {
           const lastName = document.getElementById('lastName').value;
           const email = document.getElementById('email').value;
           
-          window.OvationCart.placeOrder({
+          const order = window.OvationCart.placeOrder({
             name: `${firstName} ${lastName}`,
             email: email
           });
           
-          window.location.href = 'confirmation.html';
+          const orderData = encodeURIComponent(JSON.stringify(order));
+          window.location.href = `confirmation.html?order=${orderData}`;
         }, 800);
       });
     }

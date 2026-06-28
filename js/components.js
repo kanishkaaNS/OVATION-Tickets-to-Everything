@@ -537,7 +537,7 @@ const Components = {
   },
 
   setupInternalPageTransitions() {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     document.addEventListener('click', (event) => {
       const link = event.target.closest('a[href]');
@@ -552,27 +552,52 @@ const Components = {
         !href ||
         href.startsWith('#') ||
         href.startsWith('mailto:') ||
-        href.startsWith('tel:')
+        href.startsWith('tel:') ||
+        href.startsWith('javascript:')
       ) return;
 
-      const url = new URL(href, window.location.href);
-      if (url.origin !== window.location.origin || url.href === window.location.href) return;
-
-      event.preventDefault();
-
-      let overlay = document.querySelector('.page-transition-overlay');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.className = 'page-transition-overlay';
-        document.body.appendChild(overlay);
+      let url;
+      try {
+        url = new URL(href, window.location.href);
+      } catch (e) {
+        return; // Invalid URL, let the browser handle it
       }
 
-      document.body.classList.add('is-page-leaving');
-      overlay.classList.add('is-active');
+      const isFileProtocol = window.location.protocol === 'file:' && url.protocol === 'file:';
+      if (!isFileProtocol && url.origin !== window.location.origin) return;
 
-      window.setTimeout(() => {
+      // Always append city state for persistence across navigation
+      if (!url.searchParams.has('city') && window.OvationData) {
+        url.searchParams.set('city', window.OvationData.getSelectedCity());
+      }
+
+      // Always append cart state for persistence across navigation
+      if (!url.searchParams.has('cart') && window.OvationCart && window.OvationCart.lines.length > 0) {
+        url.searchParams.set('cart', encodeURIComponent(JSON.stringify(window.OvationCart.lines)));
+      }
+
+      // Prevent default navigation so we can use our augmented URL
+      event.preventDefault();
+
+      if (reduceMotion) {
+        // Skip animation, navigate immediately with state-augmented URL
         window.location.href = url.href;
-      }, 160);
+      } else {
+        // Show page transition overlay, then navigate
+        let overlay = document.querySelector('.page-transition-overlay');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.className = 'page-transition-overlay';
+          document.body.appendChild(overlay);
+        }
+
+        document.body.classList.add('is-page-leaving');
+        overlay.classList.add('is-active');
+
+        window.setTimeout(() => {
+          window.location.href = url.href;
+        }, 160);
+      }
     });
   }
 };

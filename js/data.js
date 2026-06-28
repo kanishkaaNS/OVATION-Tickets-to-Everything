@@ -348,19 +348,38 @@ let selectedCityState = null;
 const EVENTS = buildEvents();
 
 function getStoredCity() {
+  // 1. Check URL parameters first (most reliable on file:// protocol)
   try {
-    return localStorage.getItem(SELECTED_CITY_STORAGE_KEY);
-  } catch (e) {
-    return null;
-  }
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlCity = urlParams.get('city');
+    if (urlCity && POPULAR_CITIES.includes(urlCity)) {
+      return urlCity;
+    }
+  } catch (e) {}
+
+  // 2. Try localStorage
+  try {
+    const city = localStorage.getItem(SELECTED_CITY_STORAGE_KEY);
+    if (city) return city;
+  } catch (e) {}
+
+  // 3. Try sessionStorage as last resort
+  try {
+    const city = sessionStorage.getItem(SELECTED_CITY_STORAGE_KEY);
+    if (city) return city;
+  } catch (e) {}
+
+  return null;
 }
 
 function setStoredCity(city) {
+  // Write to both localStorage and sessionStorage for redundancy
   try {
     localStorage.setItem(SELECTED_CITY_STORAGE_KEY, city);
-  } catch (e) {
-    // Ignore storage failures so browsing still works in restricted contexts.
-  }
+  } catch (e) {}
+  try {
+    sessionStorage.setItem(SELECTED_CITY_STORAGE_KEY, city);
+  } catch (e) {}
 }
 
 function normalizeCity(city) {

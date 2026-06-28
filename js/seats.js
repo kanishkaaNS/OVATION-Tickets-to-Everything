@@ -270,8 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
     
-    // Redirect to checkout
-    window.location.href = 'checkout.html';
+    // Redirect to checkout with fallback cart data in URL
+    const cartData = encodeURIComponent(JSON.stringify(window.OvationCart.lines));
+    window.location.href = `checkout.html?cart=${cartData}`;
   });
 
   // Init

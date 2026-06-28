@@ -258,7 +258,8 @@ window.handleAdd = function(goToCheckout) {
   });
 
   if (goToCheckout) {
-    window.location.href = 'checkout.html';
+    const cartData = encodeURIComponent(JSON.stringify(window.OvationCart.lines));
+    window.location.href = `checkout.html?cart=${cartData}`;
   } else {
     isAddedToCart = true;
     // Reset quantities

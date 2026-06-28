@@ -13,19 +13,37 @@ class CartManager {
     this.listeners = [];
   }
 
-  // Persist to localStorage
+  // Persist to localStorage and sessionStorage
   saveCart() {
+    const json = JSON.stringify(this.lines);
     try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(this.lines));
+      localStorage.setItem(CART_STORAGE_KEY, json);
     } catch (e) {
-      console.error('Failed to save cart', e);
+      console.error('Failed to save cart to localStorage', e);
     }
+    try {
+      sessionStorage.setItem(CART_STORAGE_KEY, json);
+    } catch (e) {}
     this.notifyListeners();
   }
 
   loadCart() {
     try {
-      const stored = localStorage.getItem(CART_STORAGE_KEY);
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlCart = urlParams.get('cart');
+      if (urlCart) {
+        try {
+          const parsedLines = JSON.parse(decodeURIComponent(urlCart));
+          if (parsedLines && Array.isArray(parsedLines) && parsedLines.length > 0) {
+            return this.sanitizeLines(parsedLines);
+          }
+        } catch(e) {}
+      }
+
+      let stored = localStorage.getItem(CART_STORAGE_KEY);
+      if (!stored) {
+        try { stored = sessionStorage.getItem(CART_STORAGE_KEY); } catch (e) {}
+      }
       const lines = stored ? JSON.parse(stored) : [];
       return this.sanitizeLines(lines);
     } catch (e) {
@@ -36,16 +54,30 @@ class CartManager {
 
   saveOrder(order) {
     this.lastOrder = order;
+    const json = JSON.stringify(order);
     try {
-      localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(order));
-    } catch (e) {
-      console.error('Failed to save order', e);
-    }
+      localStorage.setItem(ORDER_STORAGE_KEY, json);
+    } catch (e) {}
+    try {
+      sessionStorage.setItem(ORDER_STORAGE_KEY, json);
+    } catch (e) {}
   }
 
   loadOrder() {
     try {
-      const stored = localStorage.getItem(ORDER_STORAGE_KEY);
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlOrder = urlParams.get('order');
+      if (urlOrder) {
+        try {
+          const parsedOrder = JSON.parse(decodeURIComponent(urlOrder));
+          if (parsedOrder) return parsedOrder;
+        } catch(e) {}
+      }
+
+      let stored = localStorage.getItem(ORDER_STORAGE_KEY);
+      if (!stored) {
+        try { stored = sessionStorage.getItem(ORDER_STORAGE_KEY); } catch (e) {}
+      }
       return stored ? JSON.parse(stored) : null;
     } catch (e) {
       console.error('Failed to load order', e);
