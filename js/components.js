@@ -15,17 +15,22 @@ const Components = {
     arrowUp: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base nav-icon"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>`,
     arrowUpRight: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--lg event-card__arrow"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>`,
     arrowRight: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--md btn-icon"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`,
+    chevronDown: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--sm"><path d="m6 9 6 6 6-6"/></svg>`,
+    user: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--md"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
   },
 
   // Render the header
   renderHeader(overlay = false) {
     const isLight = overlay; // If overlay is true, initially light text
     const headerClass = isLight ? "site-header site-header--transparent site-header--light" : "site-header site-header--solid site-header--dark";
-    const cartCount = window.OvationCart.itemCount;
     const selectedCity = window.OvationData ? window.OvationData.getSelectedCity() : "Ahmedabad";
-    const cityOptions = window.OvationData
-      ? window.OvationData.POPULAR_CITIES.map(city => `<option value="${city}" ${city === selectedCity ? "selected" : ""}>${city}</option>`).join("")
-      : "";
+    const cities = window.OvationData ? window.OvationData.POPULAR_CITIES : ["Ahmedabad", "Mumbai", "Delhi", "Bangalore"];
+    const renderDropdownItems = (selected) => {
+      return cities.map(city => `<div class="custom-dropdown__item ${city === selected ? 'is-selected' : ''}" data-value="${city}">${city}</div>`).join('');
+    };
+
+    const authUser = window.OvationAuth && window.OvationAuth.isAuthenticated() ? window.OvationAuth.currentUser : null;
+
 
     return `
       <header class="${headerClass}" id="main-header">
@@ -40,18 +45,21 @@ const Components = {
           </nav>
 
           <div class="site-header__actions">
-            <label class="site-header__city">
-              ${this.icons.mapPin}
-              <select id="header-city-select" class="site-header__city-select" aria-label="Select city">
-                ${cityOptions}
-              </select>
-            </label>
+            <div class="custom-dropdown site-header__city-dropdown" id="header-city-dropdown" tabindex="0">
+              <div class="custom-dropdown__trigger">
+                ${this.icons.mapPin}
+                <span class="custom-dropdown__value">${selectedCity}</span>
+                ${this.icons.chevronDown}
+              </div>
+              <div class="custom-dropdown__menu">
+                ${renderDropdownItems(selectedCity)}
+              </div>
+            </div>
 
-            <a href="checkout.html" class="site-header__cart-btn" aria-label="View cart">
-              ${this.icons.ticket}
-              <span class="site-header__cart-label">Cart</span>
-              <span class="cart-badge" id="header-cart-badge" style="display: ${cartCount > 0 ? 'flex' : 'none'}">${cartCount}</span>
-            </a>
+            <button type="button" class="site-header__auth-btn" id="header-auth-btn" aria-label="Account">
+              ${this.icons.user}
+              <span class="site-header__auth-label" id="header-auth-label">${authUser ? authUser.name : 'Sign In'}</span>
+            </button>
 
             <button type="button" class="site-header__menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">
               ${this.icons.menu}
@@ -61,12 +69,15 @@ const Components = {
 
         <div class="site-header__mobile-menu" id="mobile-menu">
           <nav class="site-header__mobile-nav">
-            <label class="site-header__mobile-city">
-              <span>City</span>
-              <select id="mobile-city-select" class="site-header__mobile-city-select" aria-label="Select city">
-                ${cityOptions}
-              </select>
-            </label>
+            <div class="custom-dropdown custom-dropdown--mobile site-header__mobile-city-dropdown" id="mobile-city-dropdown" tabindex="0">
+              <div class="custom-dropdown__trigger">
+                <span>City: <span class="custom-dropdown__value">${selectedCity}</span></span>
+                ${this.icons.chevronDown}
+              </div>
+              <div class="custom-dropdown__menu">
+                ${renderDropdownItems(selectedCity)}
+              </div>
+            </div>
             <a href="events.html" class="site-header__mobile-link">Events</a>
             <a href="events.html?category=Music" class="site-header__mobile-link">Music</a>
             <a href="events.html?category=Sports" class="site-header__mobile-link">Sports</a>
@@ -126,8 +137,6 @@ const Components = {
 
   // Render floating nav
   renderFloatingNav(activePath = '/') {
-    const cartCount = window.OvationCart.itemCount;
-
     return `
       <div class="floating-nav-wrapper" id="floating-nav-wrapper">
         <nav class="floating-nav" id="floating-nav">
@@ -139,12 +148,6 @@ const Components = {
           <a href="events.html" class="floating-nav__link ${activePath.includes('event') ? 'is-active' : ''}" aria-label="Events">
             ${this.icons.compass}
             <span class="floating-nav__link-label">Events</span>
-          </a>
-          
-          <a href="checkout.html" class="floating-nav__link ${activePath === 'checkout.html' ? 'is-active' : ''}" aria-label="Cart">
-            ${this.icons.ticketLg}
-            <span class="floating-nav__link-label">Cart</span>
-            <span class="cart-badge" id="floating-cart-badge" style="display: ${cartCount > 0 ? 'flex' : 'none'}">${cartCount}</span>
           </a>
 
           <span class="floating-nav__separator" aria-hidden="true"></span>
@@ -252,16 +255,22 @@ const Components = {
         <div>
           <div class="skeleton-line skeleton-line--title"></div>
           <div class="mt-6 flex flex-col border-t border-border">
-            ${Array.from({ length: 2 }, () => `
-              <div class="cart-item" aria-hidden="true">
-                <div class="cart-item__image-wrap skeleton-block"></div>
-                <div class="cart-item__details">
-                  <div class="skeleton-line skeleton-line--title"></div>
-                  <div class="skeleton-line skeleton-line--short mt-2"></div>
-                  <div class="skeleton-line mt-4"></div>
-                </div>
+            <div class="booking-item" aria-hidden="true">
+              <div class="booking-item__image-wrap skeleton-block"></div>
+              <div class="booking-item__details">
+                <div class="skeleton-line skeleton-line--title"></div>
+                <div class="skeleton-line skeleton-line--short mt-2"></div>
+                <div class="skeleton-line mt-4"></div>
               </div>
-            `).join('')}
+            </div>
+            <div class="booking-item" aria-hidden="true">
+              <div class="booking-item__image-wrap skeleton-block"></div>
+              <div class="booking-item__details">
+                <div class="skeleton-line skeleton-line--title"></div>
+                <div class="skeleton-line skeleton-line--short mt-2"></div>
+                <div class="skeleton-line mt-4"></div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="order-summary">
@@ -304,8 +313,8 @@ const Components = {
     // 5. Setup Floating Nav logic
     this.setupFloatingNav();
 
-    // 6. Setup Cart listeners to update badges
-    this.setupCartListeners();
+    // 6. Setup Auth listeners
+    this.setupAuthListeners();
 
     // 7. Setup Image lazy loading/fading
     this.setupFadeImages();
@@ -364,27 +373,68 @@ const Components = {
   setupCityControls() {
     if (!window.OvationData) return;
 
-    const selects = document.querySelectorAll('#header-city-select, #mobile-city-select');
-    const syncSelects = (city) => {
-      selects.forEach(select => {
-        select.value = city;
+    const dropdowns = document.querySelectorAll('.custom-dropdown');
+    
+    dropdowns.forEach(dropdown => {
+      const trigger = dropdown.querySelector('.custom-dropdown__trigger');
+      const items = dropdown.querySelectorAll('.custom-dropdown__item');
+      
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Close all other dropdowns
+        dropdowns.forEach(d => {
+          if (d !== dropdown) d.classList.remove('is-open');
+        });
+        dropdown.classList.toggle('is-open');
       });
-    };
 
-    selects.forEach(select => {
-      select.addEventListener('change', () => {
-        const city = window.OvationData.setSelectedCity(select.value);
-        syncSelects(city);
+      items.forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const city = item.getAttribute('data-value');
+          dropdown.classList.remove('is-open');
+          
+          const newCity = window.OvationData.setSelectedCity(city);
+          
+          // Update all dropdown visuals
+          dropdowns.forEach(d => {
+            const valEl = d.querySelector('.custom-dropdown__value');
+            if (valEl) valEl.textContent = newCity;
+            d.querySelectorAll('.custom-dropdown__item').forEach(i => {
+              if (i.getAttribute('data-value') === newCity) {
+                i.classList.add('is-selected');
+              } else {
+                i.classList.remove('is-selected');
+              }
+            });
+          });
 
-        const path = window.location.pathname.split('/').pop() || 'index.html';
-        if (path === 'event.html') {
-          window.location.href = 'events.html';
-        }
+          const path = window.location.pathname.split('/').pop() || 'index.html';
+          if (path === 'event.html' || path === 'seats.html' || path === 'checkout.html' || path === 'confirmation.html') {
+            window.location.href = 'events.html';
+          }
+        });
       });
     });
 
+    // Close when clicking outside
+    document.addEventListener('click', () => {
+      dropdowns.forEach(d => d.classList.remove('is-open'));
+    });
+
     window.addEventListener('ovation:city-change', (event) => {
-      syncSelects(event.detail.city);
+      const newCity = event.detail.city;
+      dropdowns.forEach(d => {
+        const valEl = d.querySelector('.custom-dropdown__value');
+        if (valEl) valEl.textContent = newCity;
+        d.querySelectorAll('.custom-dropdown__item').forEach(i => {
+          if (i.getAttribute('data-value') === newCity) {
+            i.classList.add('is-selected');
+          } else {
+            i.classList.remove('is-selected');
+          }
+        });
+      });
     });
   },
 
@@ -432,31 +482,26 @@ const Components = {
     }
   },
 
-  setupCartListeners() {
-    if (!window.OvationCart) return;
-
-    window.OvationCart.subscribe((cart) => {
-      const count = cart.itemCount;
-      const headerBadge = document.getElementById('header-cart-badge');
-      const floatBadge = document.getElementById('floating-cart-badge');
-
-      if (headerBadge) {
-        headerBadge.style.display = count > 0 ? 'flex' : 'none';
-        headerBadge.textContent = count;
-      }
-
-      if (floatBadge) {
-        floatBadge.style.display = count > 0 ? 'flex' : 'none';
-        floatBadge.textContent = count;
-
-        // Pop animation if gsap available
-        if (count > 0 && window.gsap && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          gsap.fromTo(
-            floatBadge,
-            { scale: 0.4 },
-            { scale: 1, duration: 0.45, ease: "back.out(3)" }
-          );
+  setupAuthListeners() {
+    const authBtn = document.getElementById('header-auth-btn');
+    if (authBtn) {
+      authBtn.addEventListener('click', () => {
+        if (window.OvationAuth) {
+          if (window.OvationAuth.isAuthenticated()) {
+            if(confirm("Are you sure you want to log out?")) {
+              window.OvationAuth.logout();
+            }
+          } else {
+            window.OvationAuth.showModal();
+          }
         }
+      });
+    }
+
+    window.addEventListener('ovation:auth-change', (e) => {
+      const label = document.getElementById('header-auth-label');
+      if (label) {
+        label.textContent = e.detail.user ? e.detail.user.name : 'Sign In';
       }
     });
   },
@@ -571,9 +616,9 @@ const Components = {
         url.searchParams.set('city', window.OvationData.getSelectedCity());
       }
 
-      // Always append cart state for persistence across navigation
-      if (!url.searchParams.has('cart') && window.OvationCart && window.OvationCart.lines.length > 0) {
-        url.searchParams.set('cart', encodeURIComponent(JSON.stringify(window.OvationCart.lines)));
+      // Always append booking state for persistence across navigation
+      if (!url.searchParams.has('booking') && window.OvationBooking && window.OvationBooking.currentBooking) {
+        url.searchParams.set('booking', encodeURIComponent(JSON.stringify(window.OvationBooking.currentBooking)));
       }
 
       // Prevent default navigation so we can use our augmented URL

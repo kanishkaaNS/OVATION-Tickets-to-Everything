@@ -16,10 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const sections = [
     {
-      id: 'premium',
-      name: 'Premium',
-      price: 500,
-      rows: ['A', 'B'] // Front
+      id: 'economy',
+      name: 'Economy',
+      price: 200,
+      rows: ['A', 'B'] // Front (closest to screen)
     },
     {
       id: 'standard',
@@ -28,10 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
       rows: ['C', 'D'] // Middle
     },
     {
-      id: 'economy',
-      name: 'Economy',
-      price: 200,
-      rows: ['E', 'F'] // Back
+      id: 'premium',
+      name: 'Premium',
+      price: 500,
+      rows: ['E', 'F'] // Back (farthest from screen)
     }
   ];
 
@@ -237,42 +237,57 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.getElementById('proceed-btn')?.addEventListener('click', () => {
-    if (!window.OvationCart || selectedSeats.length === 0) return;
+    if (!window.OvationBooking || selectedSeats.length === 0) return;
     
-    // Group selected seats by section/price
-    const grouped = {};
-    selectedSeats.forEach(s => {
-      // Find section name based on row
-      const rowId = s.id.charAt(0);
-      const section = sections.find(sec => sec.rows.includes(rowId));
-      const sectionName = section ? section.name : 'Standard';
+    const performProceed = () => {
+      // Group selected seats by section/price
+      const grouped = {};
+      selectedSeats.forEach(s => {
+        // Find section name based on row
+        const rowId = s.id.charAt(0);
+        const section = sections.find(sec => sec.rows.includes(rowId));
+        const sectionName = section ? section.name : 'Standard';
+        
+        if (!grouped[sectionName]) {
+          grouped[sectionName] = { price: s.price, seats: [] };
+        }
+        grouped[sectionName].seats.push(s.id);
+      });
       
-      if (!grouped[sectionName]) {
-        grouped[sectionName] = { price: s.price, seats: [] };
-      }
-      grouped[sectionName].seats.push(s.id);
-    });
-    
-    // Add each group as a line item
-    Object.keys(grouped).forEach(sectionName => {
-      const group = grouped[sectionName];
-      const tierId = `seat-${sectionName.toLowerCase()}-${Math.random().toString(36).substr(2, 9)}`;
+      const lines = [];
+      Object.keys(grouped).forEach(sectionName => {
+        const group = grouped[sectionName];
+        lines.push({
+          tierId: `seat-${sectionName.toLowerCase()}-${Math.random().toString(36).substr(2, 9)}`,
+          tierName: `${sectionName} Seats: ${group.seats.join(', ')}`,
+          price: group.price,
+          quantity: group.seats.length,
+          isSeatBooking: true
+        });
+      });
       
-      window.OvationCart.addLine({
+      window.OvationBooking.setBooking({
         eventSlug: movieData ? movieData.slug : 'unknown-movie',
-        tierId: tierId,
-        tierName: `${sectionName} Seats: ${group.seats.join(', ')}`,
-        price: group.price,
-        quantity: group.seats.length,
         venue: `${theatreName} (${showtime})`,
         city: movieData ? movieData.city : 'Unknown City',
-        isSeatBooking: true
+        lines: lines
       });
-    });
-    
-    // Redirect to checkout with fallback cart data in URL
-    const cartData = encodeURIComponent(JSON.stringify(window.OvationCart.lines));
-    window.location.href = `checkout.html?cart=${cartData}`;
+      
+      // Redirect to checkout with fallback booking data in URL
+      let url = new URL('checkout.html', window.location.href);
+      if (window.OvationData) {
+        url.searchParams.set('city', window.OvationData.getSelectedCity());
+      }
+      url.searchParams.set('booking', encodeURIComponent(JSON.stringify(window.OvationBooking.currentBooking)));
+      
+      window.location.href = url.href;
+    };
+
+    if (window.OvationAuth) {
+      window.OvationAuth.requireAuth(performProceed);
+    } else {
+      performProceed();
+    }
   });
 
   // Init

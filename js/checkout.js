@@ -15,30 +15,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initCheckout() {
   const container = document.getElementById('checkout-content');
-  if (!container || !window.OvationCart) return;
-
-  // URL fallback for cart when localStorage is blocked
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlCart = urlParams.get('cart');
-  if (urlCart && window.OvationCart.lines.length === 0) {
-    try {
-      const parsedLines = JSON.parse(decodeURIComponent(urlCart));
-      window.OvationCart.lines = window.OvationCart.sanitizeLines(parsedLines);
-      // Try to persist it so reloading doesn't lose it if session storage works
-      window.OvationCart.saveCart();
-    } catch (e) {}
-  }
+  if (!container || !window.OvationBooking) return;
 
   container.innerHTML = window.OvationComponents.renderCheckoutSkeleton();
 
   function render() {
-    const lines = window.OvationCart.lines;
+    const booking = window.OvationBooking.currentBooking;
 
-    if (lines.length === 0) {
+    if (!booking || !booking.lines || booking.lines.length === 0) {
       container.innerHTML = `
         <div class="empty-state animate-reveal-up">
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-muted"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
-          <h1 class="empty-state__title mt-6">Your cart is empty</h1>
+          <h1 class="empty-state__title mt-6">No active booking</h1>
           <p class="empty-state__message">Looks like you haven't selected any tickets yet.</p>
           <a href="events.html" class="btn btn--primary empty-state__action">Browse events</a>
         </div>
@@ -46,44 +34,29 @@ function initCheckout() {
       return;
     }
 
-    const subtotal = window.OvationCart.subtotal;
-    const fees = window.OvationCart.fees;
-    const total = window.OvationCart.total;
+    const subtotal = window.OvationBooking.subtotal;
+    const fees = window.OvationBooking.fees;
+    const total = window.OvationBooking.total;
 
-    const cartHtml = lines.map(line => {
-      const dateStr = window.OvationData.formatEventDate(line.eventDate);
+    const bookingHtml = booking.lines.map(line => {
+      const dateStr = window.OvationData.formatEventDate(booking.eventDate);
       return `
-        <div class="cart-item">
-          <div class="cart-item__image-wrap">
-            <img src="${line.eventImage}" alt="${line.eventTitle}" class="cart-item__image" />
+        <div class="booking-item">
+          <div class="booking-item__image-wrap">
+            <img src="${booking.eventImage}" alt="${booking.eventTitle}" class="booking-item__image" />
           </div>
-          <div class="cart-item__details">
-            <a href="event.html?slug=${line.eventSlug}" class="cart-item__event-link text-lg">${line.eventTitle}</a>
-            <p class="cart-item__tier">${line.tierName}</p>
-            <p class="cart-item__meta mt-2">${dateStr.full} · ${line.venue}</p>
+          <div class="booking-item__details">
+            <a href="event.html?slug=${booking.eventSlug}" class="booking-item__event-link text-lg">${booking.eventTitle}</a>
+            <p class="booking-item__tier">${line.tierName}</p>
+            <p class="booking-item__meta mt-2">${dateStr.full} · ${booking.venue}</p>
             
-            <div class="cart-item__controls">
-              ${line.isSeatBooking ? `
-                <div class="cart-item__qty" style="padding: 0 1rem; border: none; background: transparent;">
-                  <span class="cart-item__qty-value text-muted">${line.quantity} ${line.quantity === 1 ? 'ticket' : 'tickets'}</span>
-                </div>
-              ` : `
-                <div class="cart-item__qty">
-                  <button type="button" class="cart-item__qty-btn" onclick="updateCartLine('${line.eventSlug}', '${line.tierId}', ${line.quantity - 1})" aria-label="Decrease quantity">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--sm"><path d="M5 12h14"/></svg>
-                  </button>
-                  <span class="cart-item__qty-value">${line.quantity}</span>
-                  <button type="button" class="cart-item__qty-btn" onclick="updateCartLine('${line.eventSlug}', '${line.tierId}', ${line.quantity + 1})" aria-label="Increase quantity">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--sm"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                  </button>
-                </div>
-              `}
+            <div class="booking-item__controls">
+              <div class="booking-item__qty" style="padding: 0; border: none; background: transparent;">
+                <span class="booking-item__qty-value text-muted">${line.quantity} ${line.quantity === 1 ? 'ticket' : 'tickets'}</span>
+              </div>
               
-              <div class="cart-item__price-remove">
-                <span class="cart-item__price">${window.OvationData.formatCurrency(line.price * line.quantity)}</span>
-                <button type="button" class="cart-item__remove-btn" onclick="removeCartLine('${line.eventSlug}', '${line.tierId}')" aria-label="Remove item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--sm"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                </button>
+              <div class="booking-item__price-remove">
+                <span class="booking-item__price">${window.OvationData.formatCurrency(line.price * line.quantity)}</span>
               </div>
             </div>
           </div>
@@ -95,12 +68,12 @@ function initCheckout() {
       <h1 class="checkout__title animate-reveal-up">Checkout</h1>
       
       <div class="checkout__grid">
-        <!-- Left: Cart Items & Form -->
+        <!-- Left: Form -->
         <div class="animate-reveal-up" style="animation-delay: 100ms;">
           <div>
             <h2 class="font-display text-xl text-foreground">Your Tickets</h2>
             <div class="mt-6 flex flex-col border-t border-border">
-              ${cartHtml}
+              ${bookingHtml}
             </div>
           </div>
 
@@ -151,7 +124,7 @@ function initCheckout() {
         <div class="animate-reveal-up" style="animation-delay: 200ms;">
           <div class="sticky-sidebar order-summary">
             <div class="order-summary__header">
-              <h2 class="order-summary__title">Order Summary</h2>
+              <h2 class="order-summary__title">Booking Summary</h2>
             </div>
             <div class="order-summary__body">
               <div class="order-summary__row">
@@ -180,45 +153,36 @@ function initCheckout() {
     if (form) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        
-        const btn = document.getElementById('submit-order-btn');
-        btn.disabled = true;
-        btn.textContent = 'Processing...';
+        const performCheckout = () => {
+          const btn = document.getElementById('submit-order-btn');
+          btn.disabled = true;
+          btn.textContent = 'Processing...';
 
-        // Fake network delay
-        setTimeout(() => {
-          const firstName = document.getElementById('firstName').value;
-          const lastName = document.getElementById('lastName').value;
-          const email = document.getElementById('email').value;
-          
-          const order = window.OvationCart.placeOrder({
-            name: `${firstName} ${lastName}`,
-            email: email
-          });
-          
-          const orderData = encodeURIComponent(JSON.stringify(order));
-          window.location.href = `confirmation.html?order=${orderData}`;
-        }, 800);
+          // Fake network delay
+          setTimeout(() => {
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            
+            const order = window.OvationBooking.placeOrder({
+              name: `${firstName} ${lastName}`,
+              email: email
+            });
+            
+            const orderData = encodeURIComponent(JSON.stringify(order));
+            window.location.href = `confirmation.html?order=${orderData}`;
+          }, 800);
+        };
+
+        if (window.OvationAuth) {
+          window.OvationAuth.requireAuth(performCheckout);
+        } else {
+          performCheckout();
+        }
       });
     }
   }
 
   // Initial render
   requestAnimationFrame(render);
-
-  // Listen for cart changes (if updated via floating nav, etc)
-  window.OvationCart.subscribe(() => {
-    // Re-render checkout if cart changes
-    render();
-  });
-
-  // Global functions for inline handlers
-  window.updateCartLine = function(slug, tierId, qty) {
-    if (qty > 8) qty = 8; // Arbitrary max
-    window.OvationCart.updateQuantity(slug, tierId, qty);
-  };
-
-  window.removeCartLine = function(slug, tierId) {
-    window.OvationCart.removeLine(slug, tierId);
-  };
 }

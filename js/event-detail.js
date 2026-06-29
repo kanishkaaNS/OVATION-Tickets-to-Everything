@@ -204,14 +204,8 @@ function renderTicketSelector() {
       </div>
       
       <div class="ticket-selector__actions">
-        <button type="button" class="btn btn--dark btn--full" onclick="handleAdd(true)" ${count === 0 ? 'disabled' : ''}>
-          Checkout
-        </button>
-        <button type="button" class="btn ${isAddedToCart ? 'btn--added' : 'btn--outline'} btn--full" onclick="handleAdd(false)" ${count === 0 ? 'disabled' : ''}>
-          ${isAddedToCart ? `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--md"><path d="M20 6 9 17l-5-5"/></svg>
-            Added to cart
-          ` : 'Add to cart'}
+        <button type="button" class="btn btn--primary btn--full" onclick="handleBooking()" ${count === 0 ? 'disabled' : ''}>
+          Proceed to Pay
         </button>
       </div>
     </div>
@@ -236,35 +230,44 @@ window.updateQty = function(tierId, qty, max) {
   renderTicketSelector();
 };
 
-window.handleAdd = function(goToCheckout) {
-  if (!window.OvationCart || !eventData) return;
+window.handleBooking = function() {
+  if (!window.OvationBooking || !eventData) return;
 
-  eventData.tiers.forEach(t => {
-    const qty = quantities[t.id] || 0;
-    if (qty > 0) {
-      window.OvationCart.addLine({
+  const performBooking = () => {
+    const lines = [];
+    eventData.tiers.forEach(t => {
+      const qty = quantities[t.id] || 0;
+      if (qty > 0) {
+        lines.push({
+          tierId: t.id,
+          tierName: t.name,
+          price: t.price,
+          quantity: qty
+        });
+      }
+    });
+
+    if (lines.length > 0) {
+      window.OvationBooking.setBooking({
         eventSlug: eventData.slug,
-        eventTitle: eventData.title,
-        eventImage: eventData.image,
-        eventDate: eventData.date,
         venue: eventData.venue,
         city: eventData.city,
-        tierId: t.id,
-        tierName: t.name,
-        price: t.price,
-        quantity: qty
+        lines: lines
       });
-    }
-  });
 
-  if (goToCheckout) {
-    const cartData = encodeURIComponent(JSON.stringify(window.OvationCart.lines));
-    window.location.href = `checkout.html?cart=${cartData}`;
+      let url = new URL('checkout.html', window.location.href);
+      if (window.OvationData) {
+        url.searchParams.set('city', window.OvationData.getSelectedCity());
+      }
+      url.searchParams.set('booking', encodeURIComponent(JSON.stringify(window.OvationBooking.currentBooking)));
+      window.location.href = url.href;
+    }
+  };
+
+  if (window.OvationAuth) {
+    window.OvationAuth.requireAuth(performBooking);
   } else {
-    isAddedToCart = true;
-    // Reset quantities
-    Object.keys(quantities).forEach(k => { quantities[k] = 0; });
-    renderTicketSelector();
+    performBooking();
   }
 };
 
@@ -349,11 +352,24 @@ window.selectShowtime = function(theatreIndex, timeIndex) {
   
   // Transition into seat selection interface
   setTimeout(() => {
-    let url = 'seats.html';
+    let url = new URL('seats.html', window.location.href);
     if (eventData) {
-      url += `?slug=${encodeURIComponent(eventData.slug)}&theatre=${encodeURIComponent(theatre.name)}&time=${encodeURIComponent(time)}`;
+      url.searchParams.set('slug', eventData.slug);
+      url.searchParams.set('theatre', theatre.name);
+      url.searchParams.set('time', time);
     }
-    window.location.href = url;
+    
+    // Append city state for persistence across navigation
+    if (window.OvationData) {
+      url.searchParams.set('city', window.OvationData.getSelectedCity());
+    }
+
+    // Append cart state for persistence across navigation
+    if (window.OvationCart && window.OvationCart.lines.length > 0) {
+      url.searchParams.set('cart', encodeURIComponent(JSON.stringify(window.OvationCart.lines)));
+    }
+    
+    window.location.href = url.href;
   }, 300);
 };
 
