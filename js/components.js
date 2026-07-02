@@ -56,10 +56,24 @@ const Components = {
               </div>
             </div>
 
-            <button type="button" class="site-header__auth-btn" id="header-auth-btn" aria-label="Account">
-              ${this.icons.user}
-              <span class="site-header__auth-label" id="header-auth-label">${authUser ? authUser.name : 'Sign In'}</span>
-            </button>
+            ${authUser ? `
+              <div class="custom-dropdown site-header__user-dropdown" id="user-dropdown" tabindex="0">
+                <div class="custom-dropdown__trigger">
+                  ${this.icons.user}
+                  <span class="custom-dropdown__value">${authUser.name.split(' ')[0]}</span>
+                  ${this.icons.chevronDown}
+                </div>
+                <div class="custom-dropdown__menu">
+                  <div class="custom-dropdown__item custom-dropdown__item--greeting">Hi, ${authUser.name}</div>
+                  <button type="button" class="custom-dropdown__item custom-dropdown__item--action" id="header-logout-btn">Logout</button>
+                </div>
+              </div>
+            ` : `
+              <button type="button" class="site-header__auth-btn" id="header-auth-btn" aria-label="Sign In">
+                ${this.icons.user}
+                <span class="site-header__auth-label" id="header-auth-label">Sign In</span>
+              </button>
+            `}
 
             <button type="button" class="site-header__menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">
               ${this.icons.menu}
@@ -373,12 +387,12 @@ const Components = {
   setupCityControls() {
     if (!window.OvationData) return;
 
-    const dropdowns = document.querySelectorAll('.custom-dropdown');
-    
+    const dropdowns = document.querySelectorAll('.site-header__city-dropdown, .site-header__mobile-city-dropdown');
+
     dropdowns.forEach(dropdown => {
       const trigger = dropdown.querySelector('.custom-dropdown__trigger');
       const items = dropdown.querySelectorAll('.custom-dropdown__item');
-      
+
       trigger.addEventListener('click', (e) => {
         e.stopPropagation();
         // Close all other dropdowns
@@ -393,9 +407,9 @@ const Components = {
           e.stopPropagation();
           const city = item.getAttribute('data-value');
           dropdown.classList.remove('is-open');
-          
+
           const newCity = window.OvationData.setSelectedCity(city);
-          
+
           // Update all dropdown visuals
           dropdowns.forEach(d => {
             const valEl = d.querySelector('.custom-dropdown__value');
@@ -483,25 +497,61 @@ const Components = {
   },
 
   setupAuthListeners() {
+    // Sign In button (shown when logged out)
     const authBtn = document.getElementById('header-auth-btn');
     if (authBtn) {
       authBtn.addEventListener('click', () => {
         if (window.OvationAuth) {
-          if (window.OvationAuth.isAuthenticated()) {
-            if(confirm("Are you sure you want to log out?")) {
-              window.OvationAuth.logout();
-            }
-          } else {
-            window.OvationAuth.showModal();
-          }
+          window.OvationAuth.showModal();
         }
       });
     }
 
-    window.addEventListener('ovation:auth-change', (e) => {
-      const label = document.getElementById('header-auth-label');
-      if (label) {
-        label.textContent = e.detail.user ? e.detail.user.name : 'Sign In';
+    // Logout button inside user dropdown (shown when logged in)
+    const logoutBtn = document.getElementById('header-logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        if (window.OvationAuth) {
+          window.OvationAuth.logout();
+        }
+      });
+    }
+
+    // User dropdown toggle
+    const userDropdown = document.getElementById('user-dropdown');
+    if (userDropdown) {
+      const trigger = userDropdown.querySelector('.custom-dropdown__trigger');
+      if (trigger) {
+        trigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          userDropdown.classList.toggle('is-open');
+        });
+      }
+      // Close on click outside
+      document.addEventListener('click', (e) => {
+        if (!userDropdown.contains(e.target)) {
+          userDropdown.classList.remove('is-open');
+        }
+      });
+    }
+
+    // On auth change, re-render the entire header to swap between logged-in/out states
+    window.addEventListener('ovation:auth-change', () => {
+      // Re-initialize to re-render header with correct auth state
+      const headerEl = document.querySelector('.site-header');
+      const floatingNavEl = document.getElementById('floating-nav-wrapper');
+      if (headerEl && floatingNavEl) {
+        // Determine current page for active state
+        const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+        const isOverlay = headerEl.classList.contains('site-header--transparent');
+        headerEl.outerHTML = this.renderHeader(isOverlay);
+        floatingNavEl.outerHTML = this.renderFloatingNav(currentPath);
+        // Re-attach listeners
+        this.setupScrollListener();
+        this.setupFloatingNav();
+        this.setupAuthListeners();
+        this.setupCityControls();
+        this.setupMobileMenu();
       }
     });
   },
@@ -562,7 +612,7 @@ const Components = {
   },
 
   setupPressedFeedback() {
-    const interactiveSelector = '.btn, .filter-btn, .popular-city-card, .qty-control__btn, .cart-item__qty-btn, .cart-item__remove-btn, .site-header__cart-btn, .floating-nav__link, .floating-nav__top-btn';
+    const interactiveSelector = '.btn, .filter-btn, .popular-city-card, .qty-control__btn, .booking-item__qty-btn, .booking-item__remove-btn, .site-header__auth-btn, .floating-nav__link, .floating-nav__top-btn';
 
     document.addEventListener('pointerdown', (event) => {
       const target = event.target.closest(interactiveSelector);

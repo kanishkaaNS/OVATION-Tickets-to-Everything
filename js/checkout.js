@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Initialize Shared Components
   window.OvationComponents.init({ overlayHeader: false });
-  
+
   // 2. Initialize Checkout Page
   initCheckout();
 
@@ -163,12 +163,12 @@ function initCheckout() {
             const firstName = document.getElementById('firstName').value;
             const lastName = document.getElementById('lastName').value;
             const email = document.getElementById('email').value;
-            
+
             const order = window.OvationBooking.placeOrder({
               name: `${firstName} ${lastName}`,
               email: email
             });
-            
+
             const orderData = encodeURIComponent(JSON.stringify(order));
             window.location.href = `confirmation.html?order=${orderData}`;
           }, 800);

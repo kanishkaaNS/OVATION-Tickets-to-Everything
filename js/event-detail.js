@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. Initialize Shared Components
   // Use overlay header because event hero is dark
   window.OvationComponents.init({ overlayHeader: true });
-  
+
   // 2. Initialize Event Detail Page
   initEventDetail();
 
@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // State for the ticket selector
 let eventData = null;
 let quantities = {};
-let isAddedToCart = false;
 
 function initEventDetail() {
   const container = document.getElementById('event-content-container');
@@ -28,7 +27,7 @@ function initEventDetail() {
   // Get slug from URL
   const urlParams = new URLSearchParams(window.location.search);
   const slug = urlParams.get('slug');
-  
+
   eventData = window.OvationData.getEvent(slug);
 
   if (!eventData) {
@@ -139,7 +138,7 @@ function initEventDetail() {
 
     // Initial render of ticket selector
     renderTicketSelector();
-    
+
     // Setup fade images for related events
     window.OvationComponents.setupFadeImages();
     window.OvationAnimations?.initReveals?.();
@@ -164,13 +163,13 @@ function renderTicketSelector() {
 
   const total = eventData.tiers.reduce((sum, t) => sum + (quantities[t.id] || 0) * t.price, 0);
   const count = eventData.tiers.reduce((sum, t) => sum + (quantities[t.id] || 0), 0);
-  
+
   let tiersHtml = '';
-  
+
   eventData.tiers.forEach(tier => {
     const qty = quantities[tier.id] || 0;
     const soldOut = tier.available <= 0;
-    
+
     tiersHtml += `
       <div class="ticket-tier">
         <div class="ticket-tier__info">
@@ -223,14 +222,13 @@ function renderTicketSelector() {
 }
 
 // These need to be global so inline onclick handlers can access them
-window.updateQty = function(tierId, qty, max) {
-  isAddedToCart = false;
+window.updateQty = function (tierId, qty, max) {
   // Ensure quantity is between 0 and max (capped at 8 for demo)
   quantities[tierId] = Math.max(0, Math.min(qty, Math.min(max, 8)));
   renderTicketSelector();
 };
 
-window.handleBooking = function() {
+window.handleBooking = function () {
   if (!window.OvationBooking || !eventData) return;
 
   const performBooking = () => {
@@ -287,13 +285,13 @@ const THEATRES = [
   }
 ];
 
-window.openTheatreModal = function() {
+window.openTheatreModal = function () {
   let modal = document.getElementById('theatre-modal');
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'theatre-modal';
     modal.className = 'theatre-modal-overlay';
-    
+
     let theatresHtml = THEATRES.map((t, tIndex) => `
       <div class="theatre-card">
         <h3 class="theatre-card__name">${t.name}</h3>
@@ -320,36 +318,38 @@ window.openTheatreModal = function() {
     `;
     document.body.appendChild(modal);
   }
-  
+
   // Force reflow for transition
   modal.offsetHeight;
   modal.classList.add('is-open');
 };
 
-window.closeTheatreModal = function() {
+window.closeTheatreModal = function () {
   const modal = document.getElementById('theatre-modal');
   if (modal) modal.classList.remove('is-open');
 };
 
-window.selectShowtime = function(theatreIndex, timeIndex) {
+window.selectShowtime = function (theatreIndex, timeIndex) {
   const theatre = THEATRES[theatreIndex];
   const time = theatre.timings[timeIndex];
   try {
-    if (eventData) {
-      localStorage.setItem('selected_movie', JSON.stringify({
-        slug: eventData.slug,
-        title: eventData.title,
-        city: eventData.city
-      }));
+    if (window.OvationState) {
+      if (eventData) {
+        window.OvationState.set('selected_movie', {
+          slug: eventData.slug,
+          title: eventData.title,
+          city: eventData.city
+        });
+      }
+      window.OvationState.set('selected_theatre', theatre.name);
+      window.OvationState.set('selected_showtime', time);
     }
-    localStorage.setItem('selected_theatre', theatre.name);
-    localStorage.setItem('selected_showtime', time);
   } catch (e) {
-    console.error("Could not save to localStorage", e);
+    console.error("Could not save to OvationState", e);
   }
-  
+
   closeTheatreModal();
-  
+
   // Transition into seat selection interface
   setTimeout(() => {
     let url = new URL('seats.html', window.location.href);
@@ -358,17 +358,17 @@ window.selectShowtime = function(theatreIndex, timeIndex) {
       url.searchParams.set('theatre', theatre.name);
       url.searchParams.set('time', time);
     }
-    
+
     // Append city state for persistence across navigation
     if (window.OvationData) {
       url.searchParams.set('city', window.OvationData.getSelectedCity());
     }
 
-    // Append cart state for persistence across navigation
-    if (window.OvationCart && window.OvationCart.lines.length > 0) {
-      url.searchParams.set('cart', encodeURIComponent(JSON.stringify(window.OvationCart.lines)));
+    // Append booking state for persistence across navigation
+    if (window.OvationBooking && window.OvationBooking.currentBooking) {
+      url.searchParams.set('booking', encodeURIComponent(JSON.stringify(window.OvationBooking.currentBooking)));
     }
-    
+
     window.location.href = url.href;
   }, 300);
 };

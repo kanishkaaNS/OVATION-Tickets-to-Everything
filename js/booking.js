@@ -12,24 +12,14 @@ class BookingManager {
     this.lastOrder = this.loadOrder();
   }
 
-  // Persist to localStorage and sessionStorage
   saveBooking() {
     if (!this.currentBooking) {
-      try {
-        localStorage.removeItem(BOOKING_STORAGE_KEY);
-        sessionStorage.removeItem(BOOKING_STORAGE_KEY);
-      } catch (e) {}
+      if (window.OvationState) window.OvationState.set(BOOKING_STORAGE_KEY, null);
       return;
     }
-    const json = JSON.stringify(this.currentBooking);
-    try {
-      localStorage.setItem(BOOKING_STORAGE_KEY, json);
-    } catch (e) {
-      console.error('Failed to save booking to localStorage', e);
+    if (window.OvationState) {
+      window.OvationState.set(BOOKING_STORAGE_KEY, this.currentBooking);
     }
-    try {
-      sessionStorage.setItem(BOOKING_STORAGE_KEY, json);
-    } catch (e) {}
   }
 
   loadBooking() {
@@ -42,14 +32,14 @@ class BookingManager {
           if (parsedBooking) {
             return this.sanitizeBooking(parsedBooking);
           }
-        } catch(e) {}
+        } catch (e) { }
       }
 
-      let stored = localStorage.getItem(BOOKING_STORAGE_KEY);
-      if (!stored) {
-        try { stored = sessionStorage.getItem(BOOKING_STORAGE_KEY); } catch (e) {}
+      if (window.OvationState) {
+        const stored = window.OvationState.get(BOOKING_STORAGE_KEY);
+        return stored ? this.sanitizeBooking(stored) : null;
       }
-      return stored ? this.sanitizeBooking(JSON.parse(stored)) : null;
+      return null;
     } catch (e) {
       console.error('Failed to load booking', e);
       return null;
@@ -58,13 +48,9 @@ class BookingManager {
 
   saveOrder(order) {
     this.lastOrder = order;
-    const json = JSON.stringify(order);
-    try {
-      localStorage.setItem(ORDER_STORAGE_KEY, json);
-    } catch (e) {}
-    try {
-      sessionStorage.setItem(ORDER_STORAGE_KEY, json);
-    } catch (e) {}
+    if (window.OvationState) {
+      window.OvationState.set(ORDER_STORAGE_KEY, order);
+    }
   }
 
   loadOrder() {
@@ -75,14 +61,13 @@ class BookingManager {
         try {
           const parsedOrder = JSON.parse(decodeURIComponent(urlOrder));
           if (parsedOrder) return parsedOrder;
-        } catch(e) {}
+        } catch (e) { }
       }
 
-      let stored = localStorage.getItem(ORDER_STORAGE_KEY);
-      if (!stored) {
-        try { stored = sessionStorage.getItem(ORDER_STORAGE_KEY); } catch (e) {}
+      if (window.OvationState) {
+        return window.OvationState.get(ORDER_STORAGE_KEY) || null;
       }
-      return stored ? JSON.parse(stored) : null;
+      return null;
     } catch (e) {
       console.error('Failed to load order', e);
       return null;

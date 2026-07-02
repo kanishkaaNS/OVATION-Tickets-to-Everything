@@ -313,7 +313,7 @@ function makeTiers(tiers) {
 function buildDescription(title, city, category, summary) {
   return [
     `${title} brings a polished ${category.toLowerCase()} experience to ${city}, with smooth entry, clear ticket tiers, and a venue setup built for easy browsing and booking.`,
-    `${summary} Select the tier that fits your plan and keep your booking ready in the cart before checkout.`,
+    `${summary} Select the tier that fits your plan and proceed directly to checkout.`,
   ];
 }
 
@@ -355,31 +355,20 @@ function getStoredCity() {
     if (urlCity && POPULAR_CITIES.includes(urlCity)) {
       return urlCity;
     }
-  } catch (e) {}
+  } catch (e) { }
 
-  // 2. Try localStorage
-  try {
-    const city = localStorage.getItem(SELECTED_CITY_STORAGE_KEY);
-    if (city) return city;
-  } catch (e) {}
-
-  // 3. Try sessionStorage as last resort
-  try {
-    const city = sessionStorage.getItem(SELECTED_CITY_STORAGE_KEY);
-    if (city) return city;
-  } catch (e) {}
+  // 2. Use Centralized State Manager
+  if (window.OvationState) {
+    return window.OvationState.get(SELECTED_CITY_STORAGE_KEY);
+  }
 
   return null;
 }
 
 function setStoredCity(city) {
-  // Write to both localStorage and sessionStorage for redundancy
-  try {
-    localStorage.setItem(SELECTED_CITY_STORAGE_KEY, city);
-  } catch (e) {}
-  try {
-    sessionStorage.setItem(SELECTED_CITY_STORAGE_KEY, city);
-  } catch (e) {}
+  if (window.OvationState) {
+    window.OvationState.set(SELECTED_CITY_STORAGE_KEY, city);
+  }
 }
 
 function normalizeCity(city) {
