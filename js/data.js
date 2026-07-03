@@ -25,12 +25,12 @@ const POPULAR_CITIES = [
 const SELECTED_CITY_STORAGE_KEY = "ovation_selected_city";
 
 const CATEGORY_IMAGES = {
-  Music: "images/event-festival.png",
-  Comedy: "images/event-comedy.png",
-  Arts: "images/event-art.png",
-  Food: "images/event-food.png",
-  Sports: "images/event-basketball.png",
-  Movies: "images/event-theater.png",
+  Music: "images/events/music_sunburn.png",
+  Comedy: "images/events/comedy_roast.png",
+  Arts: "images/events/arts_comiccon.png",
+  Food: "images/events/food_festival.png",
+  Sports: "images/events/sports_cricket.png",
+  Movies: "images/events/movies_avengers.jpg",
 };
 
 const CITY_THEATRES = {
@@ -300,7 +300,7 @@ const CATEGORY_BLUEPRINTS = {
       genre: "Action / Sci-Fi",
       duration: "2h 45m",
       rating: "UA",
-      releaseDate: "2026-05-01",
+      releaseDate: "2026-12-18",
       languages: ["English", "Hindi", "Tamil", "Telugu"],
       tiers: [
         ["Economy", "Front rows", 300, 100],
@@ -309,12 +309,12 @@ const CATEGORY_BLUEPRINTS = {
       ],
     },
     {
-      title: "The Odyssey",
-      summary: "A visually stunning epic journey across ancient oceans based on Homer's classic tale.",
-      genre: "Adventure / Drama",
+      title: "Resident Evil",
+      summary: "A terrifying return to the survival horror franchise with new mutations and terrifying encounters.",
+      genre: "Horror / Action",
       duration: "2h 15m",
-      rating: "UA",
-      releaseDate: "2026-08-14",
+      rating: "A",
+      releaseDate: "2026-09-18",
       languages: ["English", "Hindi"],
       tiers: [
         ["Economy", "Front rows", 300, 100],
@@ -328,7 +328,7 @@ const CATEGORY_BLUEPRINTS = {
       genre: "Sci-Fi / Drama",
       duration: "3h 10m",
       rating: "A",
-      releaseDate: "2026-11-20",
+      releaseDate: "2026-12-18",
       languages: ["English", "Hindi", "Tamil"],
       tiers: [
         ["Economy", "Front rows", 300, 100],
@@ -373,6 +373,15 @@ function buildDescription(title, city, category, summary) {
   ];
 }
 
+const BLUEPRINT_IMAGES = {
+  Music: ["images/events/music_sunburn.png", "images/events/music_indie.png", "images/events/music_classical.png"],
+  Comedy: ["images/events/comedy_roast.png", "images/events/comedy_midnight.png", "images/events/comedy_improv.png"],
+  Arts: ["images/events/arts_comiccon.png", "images/events/arts_walk.png", "images/events/arts_design.png"],
+  Food: ["images/events/food_festival.png", "images/events/food_street.png", "images/events/food_dessert.png"],
+  Sports: ["images/events/sports_cricket.png", "images/events/sports_football.png", "images/events/sports_marathon.png"],
+  Movies: ["images/events/movies_avengers.jpg", "images/events/movies_resident_evil.jpg", "images/events/movies_dune.jpg"]
+};
+
 function buildEvents() {
   return POPULAR_CITIES.flatMap((city) =>
     CATEGORIES.flatMap((category) =>
@@ -387,7 +396,7 @@ function buildEvents() {
           category,
           date: CATEGORY_DATES[category][index],
           doors: category === "Sports" && index === 2 ? "6:00 AM" : category === "Arts" ? "10:00 AM" : "6:00 PM",
-          image: CATEGORY_IMAGES[category],
+          image: BLUEPRINT_IMAGES[category][index],
           summary: blueprint.summary,
           description: buildDescription(title, city, category, blueprint.summary),
           lineup: blueprint.lineup,
