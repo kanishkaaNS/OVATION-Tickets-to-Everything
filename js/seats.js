@@ -18,13 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
     {
       id: 'economy',
       name: 'Economy',
-      price: 200,
+      price: 300,
       rows: ['A', 'B'] // Front (closest to screen)
     },
     {
       id: 'standard',
       name: 'Standard',
-      price: 350,
+      price: 400,
       rows: ['C', 'D'] // Middle
     },
     {

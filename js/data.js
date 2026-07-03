@@ -33,6 +33,49 @@ const CATEGORY_IMAGES = {
   Movies: "images/event-theater.png",
 };
 
+const CITY_THEATRES = {
+  Bengaluru: [
+    { name: "PVR Phoenix Marketcity, Whitefield", timings: ["10:30 AM", "1:45 PM", "6:00 PM"] },
+    { name: "PVR Orion Mall, Rajajinagar", timings: ["11:15 AM", "4:30 PM", "9:15 PM"] },
+    { name: "PVR Nexus Mall, Koramangala", timings: ["9:00 AM", "2:00 PM", "8:30 PM"] }
+  ],
+  Mumbai: [
+    { name: "PVR Phoenix Marketcity, Kurla", timings: ["10:00 AM", "2:30 PM", "7:00 PM"] },
+    { name: "Maison PVR, Jio World Drive, BKC", timings: ["11:45 AM", "5:00 PM", "9:30 PM"] },
+    { name: "INOX R-City Mall, Ghatkopar", timings: ["9:30 AM", "3:00 PM", "8:00 PM"] }
+  ],
+  "Delhi NCR": [
+    { name: "PVR Select Citywalk, Saket", timings: ["10:15 AM", "1:30 PM", "6:45 PM"] },
+    { name: "PVR Vegas Mall, Dwarka", timings: ["11:00 AM", "4:15 PM", "9:00 PM"] },
+    { name: "INOX DLF Mall of India, Noida", timings: ["9:45 AM", "3:15 PM", "8:45 PM"] }
+  ],
+  Hyderabad: [
+    { name: "AMB Cinemas, Gachibowli", timings: ["10:30 AM", "2:00 PM", "7:30 PM"] },
+    { name: "PVR Next Galleria Mall, Punjagutta", timings: ["11:30 AM", "4:45 PM", "9:15 PM"] },
+    { name: "Prasads Multiplex, Hussain Sagar", timings: ["9:15 AM", "1:00 PM", "6:00 PM"] }
+  ],
+  Chennai: [
+    { name: "PVR VR Chennai", timings: ["10:00 AM", "1:45 PM", "6:30 PM"] },
+    { name: "Palazzo Cinemas, The Forum Vijaya Mall", timings: ["11:15 AM", "4:00 PM", "8:45 PM"] },
+    { name: "INOX Marina Mall", timings: ["9:30 AM", "2:30 PM", "8:00 PM"] }
+  ],
+  Pune: [
+    { name: "PVR Phoenix Marketcity Pune", timings: ["10:15 AM", "3:00 PM", "7:45 PM"] },
+    { name: "Cinépolis Seasons Mall", timings: ["11:00 AM", "4:30 PM", "9:00 PM"] },
+    { name: "INOX Amanora Mall", timings: ["9:45 AM", "2:15 PM", "8:30 PM"] }
+  ],
+  Kolkata: [
+    { name: "INOX South City Mall", timings: ["10:30 AM", "1:30 PM", "6:15 PM"] },
+    { name: "PVR Avani Riverside Mall", timings: ["11:45 AM", "5:00 PM", "9:30 PM"] },
+    { name: "Cinépolis Acropolis Mall", timings: ["9:00 AM", "2:45 PM", "8:00 PM"] }
+  ],
+  Ahmedabad: [
+    { name: "PVR Ahmedabad One Mall", timings: ["10:00 AM", "2:30 PM", "7:00 PM"] },
+    { name: "INOX Himalaya Mall", timings: ["11:15 AM", "4:45 PM", "9:15 PM"] },
+    { name: "Cinépolis AlphaOne Mall", timings: ["9:30 AM", "1:15 PM", "6:30 PM"] }
+  ]
+};
+
 const CITY_VENUES = {
   Ahmedabad: {
     Music: ["GMDC Ground", "Sabarmati Riverfront", "Karnavati Club Lawns"],
@@ -40,7 +83,7 @@ const CITY_VENUES = {
     Arts: ["Karnavati Club Convention Centre", "Amdavad ni Gufa", "CEPT Exhibition Gallery"],
     Food: ["Sabarmati Riverfront", "Manek Chowk Food Street", "Riverfront Event Centre"],
     Sports: ["Narendra Modi Stadium", "EKA Arena", "Sabarmati Sports Park"],
-    Movies: ["PVR Acropolis", "Drive-In Cinema Ahmedabad", "Cinepolis Ahmedabad One"],
+    Movies: ["PVR Ahmedabad One Mall", "INOX Himalaya Mall", "Cinépolis AlphaOne Mall"],
   },
   Bengaluru: {
     Music: ["Jayamahal Palace Grounds", "Phoenix Marketcity Arena", "Manpho Convention Centre"],
@@ -48,7 +91,7 @@ const CITY_VENUES = {
     Arts: ["KTPO Convention Centre", "Karnataka Chitrakala Parishath", "Bangalore International Centre"],
     Food: ["Palace Grounds", "Indiranagar Social Street", "UB City Amphitheatre"],
     Sports: ["M. Chinnaswamy Stadium", "Sree Kanteerava Stadium", "Padukone-Dravid Centre"],
-    Movies: ["PVR Orion Mall", "Bangalore International Centre", "VR Bengaluru Open Air"],
+    Movies: ["PVR Phoenix Marketcity, Whitefield", "PVR Orion Mall, Rajajinagar", "PVR Nexus Mall, Koramangala"],
   },
   Chennai: {
     Music: ["Music Academy", "YMCA Grounds", "Sir Mutha Venkatasubba Rao Concert Hall"],
@@ -56,7 +99,7 @@ const CITY_VENUES = {
     Arts: ["Chennai Trade Centre", "Lalit Kala Akademi", "DakshinaChitra"],
     Food: ["Besant Nagar Beach", "Phoenix Marketcity Courtyard", "Island Grounds"],
     Sports: ["M. A. Chidambaram Stadium", "Jawaharlal Nehru Stadium", "SDAT Tennis Stadium"],
-    Movies: ["Sathyam Cinemas", "PVR Palazzo", "Prarthana Beach Drive-In"],
+    Movies: ["PVR VR Chennai", "Palazzo Cinemas, The Forum Vijaya Mall", "INOX Marina Mall"],
   },
   "Delhi NCR": {
     Music: ["Jawaharlal Nehru Stadium", "DLF CyberHub Amphitheatre", "Garden of Five Senses"],
@@ -64,7 +107,7 @@ const CITY_VENUES = {
     Arts: ["NSIC Exhibition Ground", "India Habitat Centre", "Bikaner House"],
     Food: ["Major Dhyan Chand National Stadium", "Dilli Haat INA", "CyberHub Food Street"],
     Sports: ["Arun Jaitley Stadium", "Thyagaraj Sports Complex", "Jawaharlal Nehru Stadium"],
-    Movies: ["PVR Director's Cut", "Siri Fort Auditorium", "Sunset Cinema Club Gurgaon"],
+    Movies: ["PVR Select Citywalk, Saket", "PVR Vegas Mall, Dwarka", "INOX DLF Mall of India, Noida"],
   },
   Hyderabad: {
     Music: ["Gachibowli Stadium", "Hitex Open Grounds", "Shilpakala Vedika"],
@@ -72,7 +115,7 @@ const CITY_VENUES = {
     Arts: ["Hitex Exhibition Centre", "State Gallery of Art", "Lamakaan"],
     Food: ["People's Plaza", "Charminar Precinct", "Necklace Road"],
     Sports: ["Rajiv Gandhi International Stadium", "Gachibowli Indoor Stadium", "LB Stadium"],
-    Movies: ["Prasads Multiplex", "AMB Cinemas", "Open Air Cinema Hitec City"],
+    Movies: ["AMB Cinemas, Gachibowli", "PVR Next Galleria Mall, Punjagutta", "Prasads Multiplex, Hussain Sagar"],
   },
   Kolkata: {
     Music: ["Nicco Park Big Lawn", "Nazrul Mancha", "Science City Auditorium"],
@@ -80,7 +123,7 @@ const CITY_VENUES = {
     Arts: ["Biswa Bangla Mela Prangan", "Academy of Fine Arts", "Kolkata Centre for Creativity"],
     Food: ["Eco Park", "Park Street Food Walk", "Milan Mela Grounds"],
     Sports: ["Eden Gardens", "Salt Lake Stadium", "Netaji Indoor Stadium"],
-    Movies: ["Nandan", "INOX Quest Mall", "Rabindra Sadan Open Air"],
+    Movies: ["INOX South City Mall", "PVR Avani Riverside Mall", "Cinépolis Acropolis Mall"],
   },
   Mumbai: {
     Music: ["Jio World Garden", "Mahalaxmi Racecourse", "NESCO Grounds"],
@@ -88,7 +131,7 @@ const CITY_VENUES = {
     Arts: ["NESCO Convention Centre", "Jehangir Art Gallery", "Jio World Convention Centre"],
     Food: ["Mahalaxmi Racecourse", "Bandra Fort Amphitheatre", "Jio World Drive"],
     Sports: ["Wankhede Stadium", "Mumbai Football Arena", "Dome NSCI"],
-    Movies: ["PVR Juhu", "NCPA Open Air", "Regal Cinema"],
+    Movies: ["PVR Phoenix Marketcity, Kurla", "Maison PVR, Jio World Drive, BKC", "INOX R-City Mall, Ghatkopar"],
   },
   Pune: {
     Music: ["Amanora Park Town", "Phoenix Marketcity Arena", "Royal Palms Lawns"],
@@ -96,7 +139,7 @@ const CITY_VENUES = {
     Arts: ["Deccan College Grounds", "Monalisa Kalagram", "Raja Ravi Varma Art Gallery"],
     Food: ["FC Road Social Street", "Amanora Mall Grounds", "Koregaon Park Food Lane"],
     Sports: ["Shiv Chhatrapati Sports Complex", "MCA Stadium", "Balewadi Stadium"],
-    Movies: ["PVR Pavilion Mall", "NFAI Auditorium", "Rooftop Cinema Koregaon Park"],
+    Movies: ["PVR Phoenix Marketcity Pune", "Cinépolis Seasons Mall", "INOX Amanora Mall"],
   },
 };
 
@@ -252,44 +295,57 @@ const CATEGORY_BLUEPRINTS = {
   ],
   Movies: [
     {
-      title: "{city} Premiere Night",
-      summary: "A red-carpet movie premiere with reserved seating, fan moments, and cast conversations.",
-      lineup: ["Cast Q&A", "Premiere Screening", "Photo Wall"],
+      title: "Avengers: Doomsday",
+      summary: "The Avengers assemble once again to face an unprecedented threat from the multiverse.",
+      genre: "Action / Sci-Fi",
+      duration: "2h 45m",
+      rating: "UA",
+      releaseDate: "2026-05-01",
+      languages: ["English", "Hindi", "Tamil", "Telugu"],
       tiers: [
-        ["Standard", "Reserved screening seat", 699, 220],
-        ["Premium", "Prime seating and popcorn combo", 1499, 120],
-        ["Premiere", "Best seats and Q&A access", 2999, 40],
+        ["Economy", "Front rows", 300, 100],
+        ["Standard", "Middle rows", 400, 200],
+        ["Premium", "Back rows", 500, 50],
       ],
     },
     {
-      title: "{city} Film Festival",
-      summary: "A curated day of Indian and international films, shorts, documentaries, and filmmaker talks.",
-      lineup: ["Shorts Showcase", "Documentary Hour", "Director Talk"],
+      title: "The Odyssey",
+      summary: "A visually stunning epic journey across ancient oceans based on Homer's classic tale.",
+      genre: "Adventure / Drama",
+      duration: "2h 15m",
+      rating: "UA",
+      releaseDate: "2026-08-14",
+      languages: ["English", "Hindi"],
       tiers: [
-        ["Day Pass", "All screenings for one day", 999, 300],
-        ["Festival Pass", "All screenings and talks", 2499, 140],
-        ["Patron", "Reserved seats and catalog", 4999, 35],
+        ["Economy", "Front rows", 300, 100],
+        ["Standard", "Middle rows", 400, 200],
+        ["Premium", "Back rows", 500, 50],
       ],
     },
     {
-      title: "{city} Open Air Cinema",
-      summary: "A relaxed outdoor screening with picnic seating, food counters, and pre-show music.",
+      title: "Dune: Part Three",
+      summary: "The final chapter of the saga as Paul Atreides' holy war spreads across the galaxy.",
+      genre: "Sci-Fi / Drama",
+      duration: "3h 10m",
+      rating: "A",
+      releaseDate: "2026-11-20",
+      languages: ["English", "Hindi", "Tamil"],
       tiers: [
-        ["Lawn", "Bring-your-own mat zone", 499, 300],
-        ["Bean Bag", "Reserved bean bag seating", 999, 120],
-        ["Couple Pod", "Reserved pod for two", 2199, 50],
+        ["Economy", "Front rows", 300, 100],
+        ["Standard", "Middle rows", 400, 200],
+        ["Premium", "Back rows", 500, 50],
       ],
     },
   ],
 };
 
 const CATEGORY_DATES = {
-  Music: ["2026-07-18T19:00:00", "2026-08-08T18:00:00", "2026-09-12T19:30:00"],
-  Comedy: ["2026-07-25T21:00:00", "2026-08-29T20:00:00", "2026-10-03T19:30:00"],
-  Arts: ["2026-08-09T11:00:00", "2026-09-27T12:00:00", "2026-11-21T10:00:00"],
-  Food: ["2026-08-15T17:00:00", "2026-09-20T13:00:00", "2026-10-04T16:00:00"],
-  Sports: ["2026-08-30T19:00:00", "2026-11-15T18:30:00", "2026-12-05T07:00:00"],
-  Movies: ["2026-09-05T19:30:00", "2026-10-18T18:00:00", "2026-11-14T20:00:00"],
+  Music: ["2026-10-18T19:00:00", "2026-11-08T18:00:00", "2026-12-12T19:30:00"],
+  Comedy: ["2026-10-25T21:00:00", "2026-11-29T20:00:00", "2026-12-03T19:30:00"],
+  Arts: ["2026-10-09T11:00:00", "2026-11-27T12:00:00", "2026-12-21T10:00:00"],
+  Food: ["2026-10-15T17:00:00", "2026-11-20T13:00:00", "2026-12-04T16:00:00"],
+  Sports: ["2026-10-30T19:00:00", "2026-11-15T18:30:00", "2026-12-05T07:00:00"],
+  Movies: ["2026-10-05T19:30:00", "2026-11-18T18:00:00", "2026-12-14T20:00:00"],
 };
 
 function slugify(value) {
@@ -337,6 +393,12 @@ function buildEvents() {
           lineup: blueprint.lineup,
           featured: index === 0,
           tiers: makeTiers(blueprint.tiers),
+          // Movie specific metadata
+          genre: blueprint.genre,
+          duration: blueprint.duration,
+          rating: blueprint.rating,
+          releaseDate: blueprint.releaseDate,
+          languages: blueprint.languages,
         };
       })
     )
@@ -427,6 +489,7 @@ window.OvationData = {
   CATEGORIES,
   POPULAR_CITIES,
   CATEGORY_IMAGES,
+  CITY_THEATRES,
   EVENTS,
   formatCurrency,
   getEvent,

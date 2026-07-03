@@ -83,18 +83,37 @@ function initEventDetail() {
         <!-- Details -->
         <div>
           <div class="event-meta">
-            <div class="event-meta__item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base event-meta__icon"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-              <span class="event-meta__text">${dateStr.full}</span>
-            </div>
-            <div class="event-meta__item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base event-meta__icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span class="event-meta__text">Doors ${eventData.doors}</span>
-            </div>
-            <div class="event-meta__item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base event-meta__icon"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span class="event-meta__text">${eventData.venue}, ${eventData.city}</span>
-            </div>
+            ${eventData.category === 'Movies' ? `
+              <div class="event-meta__item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base event-meta__icon"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                <span class="event-meta__text">${eventData.genre} | Rated ${eventData.rating}</span>
+              </div>
+              <div class="event-meta__item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base event-meta__icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span class="event-meta__text">${eventData.duration}</span>
+              </div>
+              <div class="event-meta__item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base event-meta__icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span class="event-meta__text">${eventData.languages ? eventData.languages.join(', ') : ''}</span>
+              </div>
+              <div class="event-meta__item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base event-meta__icon"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                <span class="event-meta__text">Releasing: ${eventData.releaseDate}</span>
+              </div>
+            ` : `
+              <div class="event-meta__item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base event-meta__icon"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                <span class="event-meta__text">${dateStr.full}</span>
+              </div>
+              <div class="event-meta__item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base event-meta__icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span class="event-meta__text">Doors ${eventData.doors}</span>
+              </div>
+              <div class="event-meta__item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon--base event-meta__icon"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span class="event-meta__text">${eventData.venue}, ${eventData.city}</span>
+              </div>
+            `}
           </div>
 
           <div class="mt-8">
@@ -270,20 +289,10 @@ window.handleBooking = function () {
 };
 
 // --- THEATRE SELECTION LOGIC ---
-const THEATRES = [
-  {
-    name: "PVR Orion Mall",
-    timings: ["11:00 AM", "4:00 PM", "9:00 PM"]
-  },
-  {
-    name: "INOX Forum Mall",
-    timings: ["9:00 AM", "6:00 PM", "10:00 PM"]
-  },
-  {
-    name: "Cinepolis Nexus Mall",
-    timings: ["12:30 PM", "5:30 PM", "8:30 PM"]
-  }
-];
+function getTheatresForEvent() {
+  const city = (typeof eventData !== 'undefined' && eventData && eventData.city) ? eventData.city : (window.OvationData ? window.OvationData.getSelectedCity() : 'Ahmedabad');
+  return (window.OvationData && window.OvationData.CITY_THEATRES) ? window.OvationData.CITY_THEATRES[city] || [] : [];
+}
 
 window.openTheatreModal = function () {
   let modal = document.getElementById('theatre-modal');
@@ -292,7 +301,8 @@ window.openTheatreModal = function () {
     modal.id = 'theatre-modal';
     modal.className = 'theatre-modal-overlay';
 
-    let theatresHtml = THEATRES.map((t, tIndex) => `
+    const theatres = getTheatresForEvent();
+    let theatresHtml = theatres.map((t, tIndex) => `
       <div class="theatre-card">
         <h3 class="theatre-card__name">${t.name}</h3>
         <div class="theatre-card__timings">
@@ -330,7 +340,8 @@ window.closeTheatreModal = function () {
 };
 
 window.selectShowtime = function (theatreIndex, timeIndex) {
-  const theatre = THEATRES[theatreIndex];
+  const theatres = getTheatresForEvent();
+  const theatre = theatres[theatreIndex];
   const time = theatre.timings[timeIndex];
   try {
     if (window.OvationState) {
