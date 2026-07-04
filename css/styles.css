@@ -3156,3 +3156,97 @@ body.is-page-leaving main {
   color: #fff;
 }
 
+/* --------------------------------------------------------------------------
+   Print Styles for Receipt
+   -------------------------------------------------------------------------- */
+.print-only {
+  display: none;
+}
+
+@media print {
+  /* Hide all regular UI elements */
+  body > *:not(#print-receipt) {
+    display: none !important;
+  }
+  
+  /* The #print-receipt element */
+  #print-receipt.print-only {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 2rem;
+    background: #fff;
+    color: #000;
+    font-family: var(--font-sans);
+    box-sizing: border-box;
+  }
+  
+  /* Reset body styles for print */
+  body {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Print Receipt Styling */
+  .print-receipt-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #000;
+  }
+  
+  .print-receipt-header h2 {
+    font-size: 2rem;
+    font-family: var(--font-display);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  
+  .print-receipt-header h3 {
+    font-size: 1.25rem;
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .print-receipt-section {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  
+  .print-receipt-section p {
+    margin-bottom: 0.25rem;
+  }
+  
+  .print-receipt-items {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-top: 1px solid #ccc;
+    padding-top: 1rem;
+  }
+  
+  .print-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  
+  .print-receipt-total {
+    border-top: 2px solid #000;
+    padding-top: 1rem;
+    margin-top: 1rem;
+    text-align: right;
+    font-size: 1.25rem;
+  }
+  
+  .print-receipt-footer {
+    margin-top: 4rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #666;
+  }
+}

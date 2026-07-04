@@ -107,4 +107,56 @@ function initConfirmation() {
       </a>
     </div>
   `;
+
+  // Generate hidden print receipt
+  const printReceipt = document.createElement('div');
+  printReceipt.id = 'print-receipt';
+  printReceipt.className = 'print-only';
+  
+  const printItemsHtml = lines.map(line => `
+    <div class="print-item">
+      <div class="print-item-details">
+        <strong>${line.quantity}x ${line.tierName}</strong>
+      </div>
+      <div class="print-item-price">
+        ${window.OvationData.formatCurrency(line.price * line.quantity)}
+      </div>
+    </div>
+  `).join('');
+
+  printReceipt.innerHTML = `
+    <div class="print-receipt-header">
+      <h2>OVATION</h2>
+      <h3>Booking Receipt</h3>
+    </div>
+    
+    <div class="print-receipt-section">
+      <p><strong>Order ID:</strong> #${order.id}</p>
+      <p><strong>Booking Date:</strong> ${new Date(order.createdAt || Date.now()).toLocaleString()}</p>
+      <p><strong>Booking Name:</strong> ${order.name}</p>
+      <p><strong>Booking Email:</strong> ${order.email}</p>
+    </div>
+    
+    <div class="print-receipt-section">
+      <p><strong>Event:</strong> ${booking.eventTitle || 'Event'}</p>
+      <p><strong>Showtime:</strong> ${dateStr.full} ${dateStr.time ? 'at ' + dateStr.time : ''}</p>
+      <p><strong>Venue:</strong> ${booking.venue || ''}</p>
+      <p><strong>City:</strong> ${booking.city || ''}</p>
+    </div>
+    
+    <div class="print-receipt-items">
+      ${printItemsHtml}
+    </div>
+    
+    <div class="print-receipt-total">
+      <p><strong>Total Paid:</strong> ${window.OvationData.formatCurrency(order.total)}</p>
+    </div>
+    
+    <div class="print-receipt-footer">
+      <p>Thank you for your purchase.</p>
+      <p>Please present this receipt or your digital ticket at the venue.</p>
+    </div>
+  `;
+
+  document.body.appendChild(printReceipt);
 }

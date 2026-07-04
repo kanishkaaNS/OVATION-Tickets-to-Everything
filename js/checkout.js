@@ -95,6 +95,31 @@ function initCheckout() {
                 <input type="email" id="email" name="email" required class="input-base" placeholder="jane@example.com" />
               </div>
               
+              <div class="field mt-6">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="bookForOther" class="w-4 h-4 rounded border-border text-primary focus:ring-primary" />
+                  <span class="text-sm">Book for someone else</span>
+                </label>
+              </div>
+              
+              <div id="otherPersonFields" class="hidden mt-4 grid gap-4 p-4 border border-border rounded-lg bg-secondary/30">
+                <h3 class="font-medium text-sm">Recipient Details</h3>
+                <div class="grid form-grid-2 gap-4">
+                  <div class="field">
+                    <label for="recipientFirstName" class="field__label">Recipient First Name</label>
+                    <input type="text" id="recipientFirstName" class="input-base" placeholder="John" />
+                  </div>
+                  <div class="field">
+                    <label for="recipientLastName" class="field__label">Recipient Last Name</label>
+                    <input type="text" id="recipientLastName" class="input-base" placeholder="Smith" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="recipientEmail" class="field__label">Recipient Email</label>
+                  <input type="email" id="recipientEmail" class="input-base" placeholder="john@example.com" />
+                </div>
+              </div>
+              
               <div class="mt-8 border-t border-border pt-8">
                 <h2 class="font-display text-xl text-foreground mb-6">Payment</h2>
                 <div class="field">
@@ -105,6 +130,7 @@ function initCheckout() {
                   <div class="field">
                     <label for="exp" class="field__label">Expiration date</label>
                     <input type="text" id="exp" required class="input-base" placeholder="MM/YY" maxlength="5" />
+                    <p id="exp-error" class="text-destructive text-xs mt-1 hidden">Invalid month. Must be 01-12.</p>
                   </div>
                   <div class="field">
                     <label for="cvc" class="field__label">CVC</label>
@@ -151,22 +177,145 @@ function initCheckout() {
     // Setup form listener
     const form = document.getElementById('checkout-form');
     if (form) {
+      // 1. Auto-populate user data if available
+      if (window.OvationAuth && window.OvationAuth.currentUser) {
+        const user = window.OvationAuth.currentUser;
+        const firstNameInput = document.getElementById('firstName');
+        const lastNameInput = document.getElementById('lastName');
+        const emailInput = document.getElementById('email');
+        if (firstNameInput && user.name) {
+          const parts = user.name.split(' ');
+          firstNameInput.value = parts[0] || '';
+          lastNameInput.value = parts.slice(1).join(' ') || '';
+        }
+        if (emailInput && user.email) {
+          emailInput.value = user.email;
+        }
+      }
+
+      // 2. "Book for someone else" toggle
+      const bookForOther = document.getElementById('bookForOther');
+      const otherPersonFields = document.getElementById('otherPersonFields');
+      const recipientFirstName = document.getElementById('recipientFirstName');
+      const recipientLastName = document.getElementById('recipientLastName');
+      const recipientEmail = document.getElementById('recipientEmail');
+      
+      if (bookForOther && otherPersonFields) {
+        bookForOther.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            otherPersonFields.classList.remove('hidden');
+            recipientFirstName.required = true;
+            recipientLastName.required = true;
+            recipientEmail.required = true;
+          } else {
+            otherPersonFields.classList.add('hidden');
+            recipientFirstName.required = false;
+            recipientLastName.required = false;
+            recipientEmail.required = false;
+          }
+        });
+      }
+
+      // 3. Card Number Formatting
+      const cardInput = document.getElementById('card');
+      if (cardInput) {
+        cardInput.addEventListener('input', function (e) {
+          let position = this.selectionStart;
+          let val = this.value;
+          let spacesBefore = (val.substring(0, position).match(/ /g) || []).length;
+          
+          let cleanVal = val.replace(/\D/g, '');
+          let formattedVal = '';
+          for (let i = 0; i < cleanVal.length; i++) {
+            if (i > 0 && i % 4 === 0) {
+              formattedVal += ' ';
+            }
+            formattedVal += cleanVal[i];
+          }
+          this.value = formattedVal;
+          
+          let newSpacesBefore = (this.value.substring(0, position).match(/ /g) || []).length;
+          position += (newSpacesBefore - spacesBefore);
+          this.setSelectionRange(position, position);
+        });
+      }
+
+      // 4. Expiry Date Formatting & Validation
+      const expInput = document.getElementById('exp');
+      const expError = document.getElementById('exp-error');
+      let isValidExp = false;
+      
+      if (expInput) {
+        expInput.addEventListener('input', function (e) {
+          let val = this.value;
+          let position = this.selectionStart;
+          let slashesBefore = (val.substring(0, position).match(/\//g) || []).length;
+          
+          if (e.inputType === 'deleteContentBackward' && val.length === 2 && this.lastVal && this.lastVal.includes('/')) {
+            val = val.substring(0, 1);
+          }
+          
+          let cleanVal = val.replace(/\D/g, '');
+          let formattedVal = cleanVal;
+          if (cleanVal.length > 2) {
+            formattedVal = cleanVal.substring(0, 2) + '/' + cleanVal.substring(2, 4);
+          }
+          
+          this.value = formattedVal;
+          this.lastVal = formattedVal;
+          
+          let newSlashesBefore = (this.value.substring(0, position).match(/\//g) || []).length;
+          position += (newSlashesBefore - slashesBefore);
+          this.setSelectionRange(position, position);
+          
+          if (cleanVal.length >= 2) {
+            const month = parseInt(cleanVal.substring(0, 2), 10);
+            if (month < 1 || month > 12) {
+              expError.classList.remove('hidden');
+              isValidExp = false;
+            } else {
+              expError.classList.add('hidden');
+              isValidExp = cleanVal.length === 4;
+            }
+          } else {
+            expError.classList.add('hidden');
+            isValidExp = false;
+          }
+        });
+      }
+
       form.addEventListener('submit', (e) => {
         e.preventDefault();
+        
+        // Final validation
+        if (expInput && expInput.value.replace(/\D/g, '').length !== 4) {
+          isValidExp = false;
+        }
+        
+        if (!isValidExp) {
+          if (expError) expError.classList.remove('hidden');
+          return;
+        }
+
         const performCheckout = () => {
           const btn = document.getElementById('submit-order-btn');
           btn.disabled = true;
           btn.textContent = 'Processing...';
 
-          // Fake network delay
           setTimeout(() => {
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const email = document.getElementById('email').value;
+            let finalFirstName = document.getElementById('firstName').value;
+            let finalLastName = document.getElementById('lastName').value;
+            let finalEmail = document.getElementById('email').value;
+
+            if (bookForOther && bookForOther.checked) {
+              finalFirstName = recipientFirstName.value;
+              finalLastName = recipientLastName.value;
+              finalEmail = recipientEmail.value;
+            }
 
             const order = window.OvationBooking.placeOrder({
-              name: `${firstName} ${lastName}`,
-              email: email
+              name: `${finalFirstName} ${finalLastName}`,
+              email: finalEmail
             });
 
             const orderData = encodeURIComponent(JSON.stringify(order));
