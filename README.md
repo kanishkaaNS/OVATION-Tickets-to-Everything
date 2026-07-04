@@ -98,9 +98,9 @@ Some enhancements I plan to make include:
 
 <tr>
 <td>
-
-</td>
 <img width="1906" height="977" alt="Landing page" src="https://github.com/user-attachments/assets/6a7c7ead-9e5d-4ee0-9795-21d16d60a103" />
+</td>
+
 <td>
 <img width="1907" height="978" alt="Movies" src="https://github.com/user-attachments/assets/f20d7aff-f40d-4575-aa05-36e3a8f08bfc" />
 </td>
