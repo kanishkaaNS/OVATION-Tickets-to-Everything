@@ -29,9 +29,7 @@ function initEventsBrowser() {
   const urlCategory = urlParams.get('category');
   const urlCity = urlParams.get('city');
 
-  if (urlCity) {
-    window.OvationData.setSelectedCity(urlCity);
-  }
+
   
   const validCategory = window.OvationData.CATEGORIES.includes(urlCategory);
   let activeCategory = validCategory ? urlCategory : 'All';

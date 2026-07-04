@@ -29,7 +29,7 @@ const CATEGORY_IMAGES = {
   Comedy: "images/events/comedy_roast.png",
   Arts: "images/events/arts_comiccon.png",
   Food: "images/events/food_festival.png",
-  Sports: "images/events/sports_cricket.png",
+  Sports: "images/events/sports_cricket_new.jpg",
   Movies: "images/events/movies_avengers.jpg",
 };
 
@@ -275,12 +275,12 @@ const CATEGORY_BLUEPRINTS = {
       ],
     },
     {
-      title: "{city} Football Derby",
-      summary: "A packed football night with chants, city pride, and end-to-end action.",
+      title: "{city} Basketball Showdown",
+      summary: "A packed basketball night with chants, city pride, and end-to-end action on the court.",
       tiers: [
-        ["East Stand", "General reserved seating", 499, 1200],
-        ["West Stand", "Central reserved seating", 999, 650],
-        ["Premium", "Best view and lounge access", 2999, 120],
+        ["Upper Stand", "General reserved seating", 499, 1200],
+        ["Lower Stand", "Central reserved seating", 999, 650],
+        ["Courtside Premium", "Best view and lounge access", 2999, 120],
       ],
     },
     {
@@ -378,7 +378,7 @@ const BLUEPRINT_IMAGES = {
   Comedy: ["images/events/comedy_roast.png", "images/events/comedy_midnight.png", "images/events/comedy_improv.png"],
   Arts: ["images/events/arts_comiccon.png", "images/events/arts_walk.png", "images/events/arts_design.png"],
   Food: ["images/events/food_festival.png", "images/events/food_street.png", "images/events/food_dessert.png"],
-  Sports: ["images/events/sports_cricket.png", "images/events/sports_football.png", "images/events/sports_marathon.png"],
+  Sports: ["images/events/sports_cricket_new.jpg", "images/events/sports_basketball.png", "images/events/sports_marathon.png"],
   Movies: ["images/events/movies_avengers.jpg", "images/events/movies_resident_evil.jpg", "images/events/movies_dune.jpg"]
 };
 
@@ -419,7 +419,13 @@ let selectedCityState = null;
 const EVENTS = buildEvents();
 
 function getStoredCity() {
-  // 1. Check URL parameters first (most reliable on file:// protocol)
+  // 1. Use Centralized State Manager first
+  if (window.OvationState) {
+    const saved = window.OvationState.get(SELECTED_CITY_STORAGE_KEY);
+    if (saved) return saved;
+  }
+
+  // 2. Check URL parameters as fallback for first visit
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const urlCity = urlParams.get('city');
@@ -427,11 +433,6 @@ function getStoredCity() {
       return urlCity;
     }
   } catch (e) { }
-
-  // 2. Use Centralized State Manager
-  if (window.OvationState) {
-    return window.OvationState.get(SELECTED_CITY_STORAGE_KEY);
-  }
 
   return null;
 }
@@ -476,6 +477,9 @@ function formatCurrency(amount) {
 }
 
 function getEvent(slug) {
+  const currentCity = getSelectedCity();
+  const eventInCity = EVENTS.find((e) => e.slug === slug && e.city === currentCity);
+  if (eventInCity) return eventInCity;
   return EVENTS.find((e) => e.slug === slug);
 }
 

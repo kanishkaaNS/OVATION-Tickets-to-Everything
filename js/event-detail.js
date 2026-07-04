@@ -42,7 +42,7 @@ function initEventDetail() {
     return;
   }
 
-  window.OvationData.setSelectedCity(eventData.city);
+
 
   // Update document title
   document.title = `${eventData.title} | OVATION`;

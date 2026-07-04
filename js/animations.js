@@ -24,11 +24,11 @@ const Animations = {
     gsap.registerPlugin(ScrollTrigger);
 
     const lenis = new Lenis({
-      lerp: 0.085,
+      lerp: 0.05,
       smoothWheel: true,
       syncTouch: true,
-      syncTouchLerp: 0.085,
-      wheelMultiplier: 1,
+      syncTouchLerp: 0.05,
+      wheelMultiplier: 0.9,
       touchMultiplier: 1.5,
     });
 
@@ -53,7 +53,11 @@ const Animations = {
       const el = document.querySelector(id);
       if (el) {
         e.preventDefault();
-        lenis.scrollTo(el, { offset: -80 });
+        lenis.scrollTo(el, { 
+          offset: -80,
+          duration: 1.2,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+        });
       }
     });
   },

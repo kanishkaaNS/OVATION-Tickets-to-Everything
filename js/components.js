@@ -410,19 +410,6 @@ const Components = {
 
           const newCity = window.OvationData.setSelectedCity(city);
 
-          // Update all dropdown visuals
-          dropdowns.forEach(d => {
-            const valEl = d.querySelector('.custom-dropdown__value');
-            if (valEl) valEl.textContent = newCity;
-            d.querySelectorAll('.custom-dropdown__item').forEach(i => {
-              if (i.getAttribute('data-value') === newCity) {
-                i.classList.add('is-selected');
-              } else {
-                i.classList.remove('is-selected');
-              }
-            });
-          });
-
           const path = window.location.pathname.split('/').pop() || 'index.html';
           if (path === 'event.html' || path === 'seats.html' || path === 'checkout.html' || path === 'confirmation.html') {
             window.location.href = 'events.html';
