@@ -23,16 +23,67 @@ function initCheckout() {
     const booking = window.OvationBooking.currentBooking;
 
     if (!booking || !booking.lines || booking.lines.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state animate-reveal-up">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-muted"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
-          <h1 class="empty-state__title mt-6">No active booking</h1>
-          <p class="empty-state__message">Looks like you haven't selected any tickets yet.</p>
-          <a href="events.html" class="btn btn--primary empty-state__action">Browse events</a>
-        </div>
-      `;
+      document.title = "Bookings | OVATION";
+      let allOrders = [];
+      if (window.OvationState) {
+        allOrders = window.OvationState.get('ovation_all_orders') || [];
+      }
+      
+      if (allOrders.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state animate-reveal-up">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-muted"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+            <h1 class="empty-state__title mt-6">No past bookings</h1>
+            <p class="empty-state__message">Looks like you haven't booked any tickets yet.</p>
+            <a href="events.html" class="btn btn--primary empty-state__action">Browse events</a>
+          </div>
+        `;
+      } else {
+        const ordersHtml = allOrders.map((order, idx) => {
+          const b = order.booking;
+          let dateStr = { full: b.eventDate };
+          if (window.OvationData) {
+            dateStr = window.OvationData.formatEventDate(b.eventDate);
+          }
+          const ticketCount = b.lines.reduce((sum, l) => sum + l.quantity, 0);
+          const formatMoney = window.OvationData ? window.OvationData.formatCurrency : (val) => 'INR ' + val;
+          
+          return `
+            <div class="booking-item" style="display: flex; flex-direction: column; padding: 1.5rem; border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 1.5rem; background: var(--card);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                <div>
+                  <h3 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 500; margin-bottom: 0.25rem;">${b.eventTitle}</h3>
+                  <p class="text-muted text-sm">${dateStr.full} · ${b.venue}, ${b.city}</p>
+                </div>
+                <div style="text-align: right;">
+                  <span style="font-weight: 500; font-size: 1.125rem;">${formatMoney(order.total)}</span>
+                  <p class="text-muted text-xs mt-1">ID: ${order.id}</p>
+                </div>
+              </div>
+              
+              <button class="btn btn--outline" style="margin-top: 1rem; align-self: flex-start; padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="document.getElementById('order-details-${idx}').classList.toggle('hidden')">View Details</button>
+              
+              <div id="order-details-${idx}" class="hidden" style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+                <p class="text-sm" style="margin-bottom: 0.5rem;"><strong>Tickets:</strong> ${ticketCount} (${b.lines.map(l => l.quantity + 'x ' + l.tierName).join(', ')})</p>
+                <p class="text-sm" style="margin-bottom: 0.5rem;"><strong>Price breakdown:</strong> Subtotal: ${formatMoney(order.subtotal)}, Fees: ${formatMoney(order.fees)}</p>
+                <p class="text-sm" style="margin-bottom: 0.5rem;"><strong>Booked under:</strong> ${order.name} (${order.email})</p>
+                <p class="text-sm text-muted">Booked on ${new Date(order.timestamp).toLocaleDateString()}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        container.innerHTML = `
+          <h1 class="checkout__title animate-reveal-up" style="font-family: var(--font-display); font-size: 2.25rem; margin-bottom: 2rem;">Your Bookings</h1>
+          <div class="animate-reveal-up" style="animation-delay: 100ms; max-width: 48rem;">
+            ${ordersHtml}
+          </div>
+        `;
+      }
       return;
     }
+
+    document.title = "Checkout | OVATION";
 
     const subtotal = window.OvationBooking.subtotal;
     const fees = window.OvationBooking.fees;

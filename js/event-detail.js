@@ -117,20 +117,23 @@ function initEventDetail() {
           </div>
 
           <div class="mt-8">
-            <h2 class="event-about__title">About this event</h2>
-            <div class="event-about__text">
-              ${eventData.description.map(p => `<p>${p}</p>`).join('')}
+            <button id="toggle-details-btn" class="btn btn--outline" style="margin-bottom: 1rem;">Show Details</button>
+            <div id="event-details-content" class="hidden">
+              <h2 class="event-about__title">About this event</h2>
+              <div class="event-about__text">
+                ${eventData.description.map(p => `<p>${p}</p>`).join('')}
+              </div>
+
+              ${eventData.lineup && eventData.lineup.length > 0 ? `
+                <div class="event-lineup mt-8">
+                  <h2 class="event-lineup__title">Lineup</h2>
+                  <ul class="event-lineup__list">
+                    ${eventData.lineup.map(name => `<li class="event-lineup__tag">${name}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
             </div>
           </div>
-
-          ${eventData.lineup && eventData.lineup.length > 0 ? `
-            <div class="event-lineup">
-              <h2 class="event-lineup__title">Lineup</h2>
-              <ul class="event-lineup__list">
-                ${eventData.lineup.map(name => `<li class="event-lineup__tag">${name}</li>`).join('')}
-              </ul>
-            </div>
-          ` : ''}
         </div>
 
         <!-- Ticket Selector -->
@@ -161,6 +164,20 @@ function initEventDetail() {
     // Setup fade images for related events
     window.OvationComponents.setupFadeImages();
     window.OvationAnimations?.initReveals?.();
+
+    // Setup toggle button logic
+    const toggleBtn = document.getElementById('toggle-details-btn');
+    const detailsContent = document.getElementById('event-details-content');
+    if (toggleBtn && detailsContent) {
+      toggleBtn.addEventListener('click', () => {
+        detailsContent.classList.toggle('hidden');
+        if (detailsContent.classList.contains('hidden')) {
+          toggleBtn.textContent = 'Show Details';
+        } else {
+          toggleBtn.textContent = 'Hide Details';
+        }
+      });
+    }
   });
 }
 

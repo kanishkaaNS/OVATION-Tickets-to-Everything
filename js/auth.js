@@ -138,6 +138,7 @@ class AuthManager {
   }
 
   login(email, password) {
+    this.users = this._loadUsers();
     const emailResult = Validators.email(email);
     if (!emailResult.valid) {
       return { success: false, message: emailResult.message };
@@ -151,7 +152,7 @@ class AuthManager {
     return { success: false, message: 'Invalid email or password.' };
   }
 
-  signup(name, email, password, confirmPassword) {
+  signup(name, email, password, confirmPassword, securityQuestion, securityAnswer) {
     // Validate name
     const nameResult = Validators.name(name);
     if (!nameResult.valid) {
@@ -175,6 +176,10 @@ class AuthManager {
       return { success: false, message: 'Passwords do not match.' };
     }
 
+    if (!securityQuestion || !securityAnswer || securityAnswer.trim() === '') {
+      return { success: false, message: 'Please select a security question and provide an answer.' };
+    }
+
     // Check for existing account
     const normalizedEmail = email.trim().toLowerCase();
     if (this.users.some(u => u.email === normalizedEmail)) {
@@ -186,6 +191,8 @@ class AuthManager {
       name: name.trim(),
       email: normalizedEmail,
       password: password,
+      securityQuestion: securityQuestion,
+      securityAnswer: securityAnswer.trim().toLowerCase(),
       registeredAt: new Date().toISOString()
     };
     this.users.push(newUser);
@@ -196,6 +203,59 @@ class AuthManager {
 
   logout() {
     this._saveSession(null);
+  }
+
+  getSecurityQuestion(email) {
+    this.users = this._loadUsers();
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = this.users.find(u => u.email === normalizedEmail);
+    if (user && user.securityQuestion) {
+      return { success: true, question: user.securityQuestion };
+    }
+    return { success: false, message: 'No account found with this email address, or account has no security question set.' };
+  }
+
+  verifySecurityAnswer(email, answer) {
+    this.users = this._loadUsers();
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = this.users.find(u => u.email === normalizedEmail);
+    if (user && user.securityAnswer === answer.trim().toLowerCase()) {
+      return { success: true };
+    }
+    return { success: false, message: 'Incorrect security answer.' };
+  }
+
+  resetPassword(email, newPassword, confirmPassword) {
+    this.users = this._loadUsers();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check if user exists
+    const userIndex = this.users.findIndex(u => u.email === normalizedEmail);
+    if (userIndex === -1) {
+      return { success: false, message: 'No account found with this email address.' };
+    }
+
+    // Validate password
+    const passResult = Validators.password(newPassword);
+    if (!passResult.valid) {
+      return { success: false, message: 'Password does not meet all requirements.' };
+    }
+
+    // Confirm password match
+    if (newPassword !== confirmPassword) {
+      return { success: false, message: 'Passwords do not match.' };
+    }
+
+    // Update password
+    this.users[userIndex].password = newPassword;
+    this._saveUsers();
+    
+    // Clear session if they were logged in
+    if (this.currentUser && this.currentUser.email === normalizedEmail) {
+      this.logout();
+    }
+
+    return { success: true };
   }
 
   /**
@@ -257,16 +317,57 @@ class AuthManager {
           <!-- ==================== FORGOT PASSWORD FORM ==================== -->
           <form id="auth-forgot-form" class="auth-form" novalidate>
             <h2 class="auth-form__heading">Reset Password</h2>
-            <p class="auth-form__subtitle">Enter your email and we'll send you a link to reset your password.</p>
+            <p class="auth-form__subtitle" id="forgot-subtitle">Enter your registered email address to begin.</p>
             <div id="forgot-error" class="auth-error"></div>
             <div id="forgot-success" class="auth-success"></div>
 
-            <div class="form-group">
-              <label for="forgot-email">Email Address</label>
-              <input type="email" id="forgot-email" class="form-input" placeholder="you@example.com" required autocomplete="email" />
+            <div id="forgot-step-1">
+              <div class="form-group">
+                <label for="forgot-email">Email Address</label>
+                <input type="email" id="forgot-email" class="form-input" placeholder="you@example.com" required autocomplete="email" />
+              </div>
+              <button type="button" class="btn btn--primary btn--full auth-form__submit" id="forgot-btn-step-1">Continue</button>
             </div>
 
-            <button type="submit" class="btn btn--primary btn--full auth-form__submit">Send Reset Link</button>
+            <div id="forgot-step-2" style="display: none;">
+              <div class="form-group">
+                <label>Security Question</label>
+                <p id="forgot-security-question-text" style="font-weight: 500; margin-bottom: 0.5rem;"></p>
+                <input type="text" id="forgot-security-answer" class="form-input" placeholder="Enter your answer" required />
+              </div>
+              <button type="button" class="btn btn--primary btn--full auth-form__submit" id="forgot-btn-step-2">Verify Answer</button>
+            </div>
+
+            <div id="forgot-step-3" style="display: none;">
+              <div class="form-group form-group--password">
+                <label for="forgot-password">New Password</label>
+                <input type="password" id="forgot-password" class="form-input" placeholder="Create a strong password" required autocomplete="new-password" />
+                <div class="password-tooltip" id="forgot-password-tooltip">
+                  <p class="password-tooltip__title">Password must contain:</p>
+                  <ul class="password-tooltip__list" id="forgot-password-rules-list">
+                    <li data-rule="length"><span class="password-tooltip__icon">○</span> 8–16 characters</li>
+                    <li data-rule="uppercase"><span class="password-tooltip__icon">○</span> One uppercase letter</li>
+                    <li data-rule="lowercase"><span class="password-tooltip__icon">○</span> One lowercase letter</li>
+                    <li data-rule="number"><span class="password-tooltip__icon">○</span> One number</li>
+                    <li data-rule="special"><span class="password-tooltip__icon">○</span> One special character</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="forgot-confirm">Confirm New Password</label>
+                <input type="password" id="forgot-confirm" class="form-input" placeholder="Re-enter your new password" required autocomplete="new-password" />
+                <span class="form-hint" id="forgot-confirm-hint"></span>
+              </div>
+              
+              <button type="submit" class="btn btn--primary btn--full auth-form__submit" id="forgot-btn-step-3">Reset Password</button>
+            </div>
+
+            <p class="auth-form__note" style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 1.5rem; margin-bottom: 1rem; text-align: center;">
+              This project uses a security question for demonstration purposes. In a production application, password recovery would typically be completed using a secure email verification process.
+            </p>
+
+            <button type="submit" class="btn btn--primary btn--full auth-form__submit">Reset Password</button>
             <button type="button" class="btn btn--outline btn--full auth-form__back" id="back-to-login-link">Back to Login</button>
           </form>
 
@@ -305,6 +406,23 @@ class AuthManager {
               <label for="signup-confirm">Confirm Password</label>
               <input type="password" id="signup-confirm" class="form-input" placeholder="Re-enter your password" required autocomplete="new-password" />
               <span class="form-hint" id="signup-confirm-hint"></span>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+              <label for="signup-security-question">Security Question</label>
+              <select id="signup-security-question" class="form-input" required>
+                <option value="" disabled selected>Select a security question</option>
+                <option value="What was the name of your first pet?">What was the name of your first pet?</option>
+                <option value="What is your favourite movie?">What is your favourite movie?</option>
+                <option value="What city were you born in?">What city were you born in?</option>
+                <option value="What was the name of your first school?">What was the name of your first school?</option>
+                <option value="What is your favourite food?">What is your favourite food?</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="signup-security-answer">Security Answer</label>
+              <input type="text" id="signup-security-answer" class="form-input" placeholder="Enter your answer" required />
             </div>
 
             <button type="submit" class="btn btn--primary btn--full auth-form__submit" id="signup-submit-btn">Create Account</button>
@@ -404,23 +522,72 @@ class AuthManager {
     loginEmail.addEventListener('input', clearLoginError);
     loginPass.addEventListener('input', clearLoginError);
 
-    // --- Password tooltip logic (signup only) ---
+    // --- Password Tooltip visibility helper ---
+    const updateTooltipVisibility = (passInput, tooltipEl, listId, isFocused) => {
+      this._updatePasswordRules(passInput.value, listId);
+      const isValid = Validators.password(passInput.value).valid;
+      
+      if (isFocused && !isValid) {
+        tooltipEl.classList.add('is-visible');
+      } else {
+        tooltipEl.classList.remove('is-visible');
+      }
+    };
+
+    // --- Password tooltip logic (signup) ---
     const signupPass = document.getElementById('signup-password');
     const tooltip = document.getElementById('password-tooltip');
+    let isSignupFocused = false;
 
-    const showTooltip = () => {
-      tooltip.classList.add('is-visible');
-      this._updatePasswordRules(signupPass.value);
-    };
-    const hideTooltip = () => {
-      tooltip.classList.remove('is-visible');
-    };
-
-    signupPass.addEventListener('focus', showTooltip);
-    signupPass.addEventListener('input', () => {
-      this._updatePasswordRules(signupPass.value);
+    signupPass.addEventListener('focus', () => {
+      isSignupFocused = true;
+      updateTooltipVisibility(signupPass, tooltip, 'password-rules-list', isSignupFocused);
     });
-    signupPass.addEventListener('blur', hideTooltip);
+    signupPass.addEventListener('input', () => {
+      updateTooltipVisibility(signupPass, tooltip, 'password-rules-list', isSignupFocused);
+    });
+    signupPass.addEventListener('blur', () => {
+      isSignupFocused = false;
+      updateTooltipVisibility(signupPass, tooltip, 'password-rules-list', isSignupFocused);
+    });
+
+    // --- Forgot Password Tooltip logic ---
+    const forgotPass = document.getElementById('forgot-password');
+    const forgotTooltip = document.getElementById('forgot-password-tooltip');
+    let isForgotFocused = false;
+
+    if (forgotPass && forgotTooltip) {
+      forgotPass.addEventListener('focus', () => {
+        isForgotFocused = true;
+        updateTooltipVisibility(forgotPass, forgotTooltip, 'forgot-password-rules-list', isForgotFocused);
+      });
+      forgotPass.addEventListener('input', () => {
+        updateTooltipVisibility(forgotPass, forgotTooltip, 'forgot-password-rules-list', isForgotFocused);
+      });
+      forgotPass.addEventListener('blur', () => {
+        isForgotFocused = false;
+        updateTooltipVisibility(forgotPass, forgotTooltip, 'forgot-password-rules-list', isForgotFocused);
+      });
+    }
+
+    // --- Forgot Password Confirm hint ---
+    const forgotConfirm = document.getElementById('forgot-confirm');
+    const forgotConfirmHint = document.getElementById('forgot-confirm-hint');
+
+    forgotConfirm.addEventListener('input', () => {
+      if (forgotConfirm.value.length === 0) {
+        forgotConfirmHint.textContent = '';
+        forgotConfirmHint.className = 'form-hint';
+        return;
+      }
+      if (forgotConfirm.value === forgotPass.value) {
+        forgotConfirmHint.textContent = 'Passwords match ✓';
+        forgotConfirmHint.className = 'form-hint form-hint--success';
+      } else {
+        forgotConfirmHint.textContent = 'Passwords do not match';
+        forgotConfirmHint.className = 'form-hint form-hint--error';
+      }
+    });
 
     // --- Confirm password live hint ---
     const signupConfirm = document.getElementById('signup-confirm');
@@ -494,9 +661,11 @@ class AuthManager {
       const email = signupEmail.value;
       const password = signupPass.value;
       const confirm = signupConfirm.value;
+      const securityQuestion = document.getElementById('signup-security-question').value;
+      const securityAnswer = document.getElementById('signup-security-answer').value;
       const errEl = document.getElementById('signup-error');
 
-      const result = this.signup(name, email, password, confirm);
+      const result = this.signup(name, email, password, confirm, securityQuestion, securityAnswer);
       if (result.success) {
         this.hideModal();
         if (this.pendingAction) {
@@ -510,46 +679,123 @@ class AuthManager {
     });
 
     // Auto-clear signup error on any input
-    [document.getElementById('signup-name'), signupEmail, signupPass, signupConfirm].forEach(el => {
-      el.addEventListener('input', () => {
-        const errEl = document.getElementById('signup-error');
-        errEl.style.display = 'none';
-        errEl.textContent = '';
-      });
+    [document.getElementById('signup-name'), signupEmail, signupPass, signupConfirm, document.getElementById('signup-security-answer'), document.getElementById('signup-security-question')].forEach(el => {
+      if (el) {
+        el.addEventListener('input', () => {
+          const errEl = document.getElementById('signup-error');
+          errEl.style.display = 'none';
+          errEl.textContent = '';
+        });
+      }
     });
 
-    // --- Forgot Password ---
-    document.getElementById('auth-forgot-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = document.getElementById('forgot-email').value;
-      const errEl = document.getElementById('forgot-error');
-      const successEl = document.getElementById('forgot-success');
+    // --- Forgot Password Flow ---
+    const forgotEmailInput = document.getElementById('forgot-email');
+    const forgotStep1 = document.getElementById('forgot-step-1');
+    const forgotStep2 = document.getElementById('forgot-step-2');
+    const forgotStep3 = document.getElementById('forgot-step-3');
+    const forgotSubtitle = document.getElementById('forgot-subtitle');
+    const errElForgot = document.getElementById('forgot-error');
+    const successElForgot = document.getElementById('forgot-success');
 
-      // Validate email first
+    // Step 1: Continue
+    document.getElementById('forgot-btn-step-1').addEventListener('click', () => {
+      const email = forgotEmailInput.value;
+      errElForgot.style.display = 'none';
+
       const emailResult = Validators.email(email);
       if (!emailResult.valid) {
-        errEl.textContent = emailResult.message;
-        errEl.style.display = 'block';
-        successEl.style.display = 'none';
+        errElForgot.textContent = emailResult.message;
+        errElForgot.style.display = 'block';
         return;
       }
 
-      // Simulate success
-      errEl.style.display = 'none';
-      successEl.textContent = 'If an account exists with this email, a password reset link has been sent.';
-      successEl.style.display = 'block';
-      document.getElementById('auth-forgot-form').querySelector('button[type="submit"]').disabled = true;
+      const qResult = this.getSecurityQuestion(email);
+      if (qResult.success) {
+        document.getElementById('forgot-security-question-text').textContent = qResult.question;
+        forgotStep1.style.display = 'none';
+        forgotStep2.style.display = 'block';
+        forgotSubtitle.textContent = 'Answer your security question to continue.';
+      } else {
+        errElForgot.textContent = qResult.message;
+        errElForgot.style.display = 'block';
+      }
+    });
+
+    // Step 2: Verify Answer
+    document.getElementById('forgot-btn-step-2').addEventListener('click', () => {
+      const email = forgotEmailInput.value;
+      const answer = document.getElementById('forgot-security-answer').value;
+      errElForgot.style.display = 'none';
+
+      if (!answer.trim()) {
+        errElForgot.textContent = 'Please enter your security answer.';
+        errElForgot.style.display = 'block';
+        return;
+      }
+
+      const verifyResult = this.verifySecurityAnswer(email, answer);
+      if (verifyResult.success) {
+        forgotStep2.style.display = 'none';
+        forgotStep3.style.display = 'block';
+        forgotSubtitle.textContent = 'Enter your new password.';
+      } else {
+        errElForgot.textContent = verifyResult.message;
+        errElForgot.style.display = 'block';
+      }
+    });
+
+    // Step 3: Reset Password
+    document.getElementById('auth-forgot-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      if (forgotStep3.style.display === 'none') return;
+
+      const email = forgotEmailInput.value;
+      const newPassword = document.getElementById('forgot-password').value;
+      const confirmPassword = document.getElementById('forgot-confirm').value;
+
+      errElForgot.style.display = 'none';
+      successElForgot.style.display = 'none';
+
+      const result = this.resetPassword(email, newPassword, confirmPassword);
+      if (result.success) {
+        successElForgot.textContent = 'Password has been successfully updated.';
+        successElForgot.style.display = 'block';
+        document.getElementById('auth-forgot-form').reset();
+        
+        setTimeout(() => {
+          activateTab('login');
+          showForm('login');
+          this._clearErrors();
+        }, 2000);
+      } else {
+        errElForgot.textContent = result.message;
+        errElForgot.style.display = 'block';
+      }
+    });
+
+    // Auto-clear forgot error on any input
+    ['forgot-email', 'forgot-security-answer', 'forgot-password', 'forgot-confirm'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', () => {
+          const errEl = document.getElementById('forgot-error');
+          errEl.style.display = 'none';
+          errEl.textContent = '';
+        });
+      }
     });
   }
 
   // --- Password Rules UI ---
 
-  _updatePasswordRules(password) {
+  _updatePasswordRules(password, listId = 'password-rules-list') {
     const result = Validators.password(password);
-    const listItems = document.querySelectorAll('#password-rules-list li');
+    const listItems = document.querySelectorAll(`#${listId} li`);
 
     result.rules.forEach(rule => {
-      const li = document.querySelector(`#password-rules-list li[data-rule="${rule.id}"]`);
+      const li = document.querySelector(`#${listId} li[data-rule="${rule.id}"]`);
       if (!li) return;
       const icon = li.querySelector('.password-tooltip__icon');
       if (rule.passed) {
@@ -598,11 +844,18 @@ class AuthManager {
     if (tooltip) tooltip.classList.remove('is-visible');
 
     // Reset password rule icons
-    document.querySelectorAll('#password-rules-list li').forEach(li => {
+    document.querySelectorAll('#password-rules-list li, #forgot-password-rules-list li').forEach(li => {
       li.classList.remove('is-passed', 'is-failed');
       const icon = li.querySelector('.password-tooltip__icon');
       if (icon) icon.textContent = '○';
     });
+
+    // Reset forgot password tooltip and hints
+    const forgotTooltip = document.getElementById('forgot-password-tooltip');
+    if (forgotTooltip) forgotTooltip.classList.remove('is-visible');
+
+    const forgotConfirmHint = document.getElementById('forgot-confirm-hint');
+    if (forgotConfirmHint) { forgotConfirmHint.textContent = ''; forgotConfirmHint.className = 'form-hint'; }
 
     // Reset confirm hint
     const confirmHint = document.getElementById('signup-confirm-hint');
@@ -612,8 +865,18 @@ class AuthManager {
     const emailHint = document.getElementById('signup-email-hint');
     if (emailHint) { emailHint.textContent = ''; emailHint.className = 'form-hint'; }
 
+    // Reset forgot password step view
+    const forgotStep1 = document.getElementById('forgot-step-1');
+    const forgotStep2 = document.getElementById('forgot-step-2');
+    const forgotStep3 = document.getElementById('forgot-step-3');
+    const forgotSubtitle = document.getElementById('forgot-subtitle');
+    if (forgotStep1) forgotStep1.style.display = 'block';
+    if (forgotStep2) forgotStep2.style.display = 'none';
+    if (forgotStep3) forgotStep3.style.display = 'none';
+    if (forgotSubtitle) forgotSubtitle.textContent = 'Enter your registered email address to begin.';
+
     // Re-enable forgot submit
-    const forgotSubmit = document.querySelector('#auth-forgot-form button[type="submit"]');
+    const forgotSubmit = document.getElementById('forgot-btn-step-3');
     if (forgotSubmit) forgotSubmit.disabled = false;
 
     // Default to login tab

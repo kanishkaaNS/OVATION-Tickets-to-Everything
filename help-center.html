@@ -3,38 +3,143 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Help Center | OVATION</title>
-  <meta name="description" content="Get help with Ovation ticket bookings." />
+  <title>Help Center & Contact | OVATION</title>
+  <meta name="description" content="Get help with Ovation ticket bookings or contact our support team." />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <style>
+    .faq-icon {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .faq-icon.is-open {
+      transform: rotate(180deg);
+    }
+    
+    /* Email Tooltip */
+    .support-card {
+      position: relative;
+    }
+    .email-tooltip {
+      position: absolute;
+      bottom: calc(100% + 0.5rem);
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      width: max-content;
+      max-width: 240px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      font-size: 0.75rem;
+      color: var(--muted-foreground);
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      z-index: 10;
+    }
+    .support-card:hover .email-tooltip {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
 </head>
 <body class="bg-background">
   <div id="header-container"></div>
 
   <main class="min-h-screen">
-    <article class="content-page">
-      <p class="content-page__label">Help Center</p>
-      <h1 class="content-page__title">Help for booking and checkout.</h1>
-      <p class="content-page__intro">
-        Find quick answers for selecting a city, adding tickets to your cart, completing checkout, and viewing order confirmation.
-      </p>
+    <div class="content-page" style="padding-top: 8rem; max-width: 64rem;">
+      <p class="content-page__label animate-reveal-up">Help & Support</p>
+      <h1 class="content-page__title animate-reveal-up" style="animation-delay: 100ms;">How can we help you today?</h1>
+      
+      <!-- Contact Support Grid -->
+      <div class="animate-reveal-up" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2.5rem; margin-top: 3.5rem; margin-bottom: 6rem; animation-delay: 200ms;">
+        
+        <!-- Email -->
+        <div class="support-card rounded-lg bg-card group" style="padding: 2.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-primary mb-4"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          <h3 class="font-display text-lg font-medium">Email Support</h3>
+          <a href="mailto:support@ovationtickets.demo" class="text-primary hover:underline mt-2 inline-block font-medium">support@ovationtickets.demo</a>
+          
+          <div class="email-tooltip">
+            Frontend demonstration project. Email support is not currently active.
+          </div>
+        </div>
 
-      <div class="content-page__sections">
-        <section class="content-page__section">
-          <h2>Booking tickets</h2>
-          <p>Choose your city, open an event, select ticket quantities, and use Add to cart or Checkout to continue.</p>
-        </section>
-        <section class="content-page__section">
-          <h2>Cart and checkout</h2>
-          <p>You can update quantities, remove tickets, and complete the demo payment form to generate an order confirmation.</p>
-        </section>
-        <section class="content-page__section">
-          <h2>Changing cities</h2>
-          <p>Use the city selector in the header to refresh event listings for another popular city.</p>
-        </section>
+        <!-- Phone -->
+        <div class="rounded-lg bg-card group" style="padding: 2.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-primary mb-4"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <h3 class="font-display text-lg font-medium">Phone Support</h3>
+          <a href="tel:+9118001234567" class="text-primary hover:underline mt-2 inline-block font-medium">+91 1800-123-4567</a>
+        </div>
+
+        <!-- Hours -->
+        <div class="rounded-lg bg-card group" style="padding: 2.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-primary mb-4"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <h3 class="font-display text-lg font-medium">Support Hours</h3>
+          <p class="text-muted mt-2">Monday – Friday</p>
+          <p class="font-medium mt-1">9:00 AM – 9:00 PM IST</p>
+        </div>
+
+        <!-- Live Chat -->
+        <div class="rounded-lg bg-card" style="padding: 2.5rem; position: relative; opacity: 0.75; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+          <span style="position: absolute; top: 1.5rem; right: 1.5rem; background: var(--secondary); color: var(--muted-foreground); font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 9999px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border: 1px solid var(--border);">Coming Soon</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-muted mb-4"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+          <h3 class="font-display text-lg font-medium text-muted">Live Chat</h3>
+          <button disabled class="btn btn--outline mt-4" style="opacity: 0.6; cursor: not-allowed; width: 100%;">Start Chat</button>
+        </div>
+        
       </div>
-    </article>
+
+      <!-- FAQ Section -->
+      <div class="animate-reveal-up" style="animation-delay: 300ms;">
+        <h2 class="font-display text-3xl" style="margin-bottom: 2.5rem;">Frequently Asked Questions</h2>
+        <div class="faq-accordion" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- Item 1 -->
+          <div class="faq-item border border-border rounded-lg bg-card overflow-hidden">
+            <button class="faq-trigger w-full flex justify-between items-center p-5 text-left font-medium text-lg transition-colors" style="cursor: pointer; background: transparent; border: none;" onclick="toggleFaq(this)" onmouseover="this.style.backgroundColor='var(--secondary)'" onmouseout="this.style.backgroundColor='transparent'">
+              <span>Booking Tickets</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="faq-icon"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="faq-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+              <div class="p-5 pt-0 text-muted" style="line-height: 1.625;">
+                <p>Choose your city, open an event, select ticket quantities, and use Add to cart or Checkout to continue.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 2 -->
+          <div class="faq-item border border-border rounded-lg bg-card overflow-hidden">
+            <button class="faq-trigger w-full flex justify-between items-center p-5 text-left font-medium text-lg transition-colors" style="cursor: pointer; background: transparent; border: none;" onclick="toggleFaq(this)" onmouseover="this.style.backgroundColor='var(--secondary)'" onmouseout="this.style.backgroundColor='transparent'">
+              <span>Cart / Checkout</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="faq-icon"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="faq-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+              <div class="p-5 pt-0 text-muted" style="line-height: 1.625;">
+                <p>You can update quantities, remove tickets, and complete the demo payment form to generate an order confirmation.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 3 -->
+          <div class="faq-item border border-border rounded-lg bg-card overflow-hidden">
+            <button class="faq-trigger w-full flex justify-between items-center p-5 text-left font-medium text-lg transition-colors" style="cursor: pointer; background: transparent; border: none;" onclick="toggleFaq(this)" onmouseover="this.style.backgroundColor='var(--secondary)'" onmouseout="this.style.backgroundColor='transparent'">
+              <span>Changing Cities</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="faq-icon"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="faq-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+              <div class="p-5 pt-0 text-muted" style="line-height: 1.625;">
+                <p>Use the city selector in the header to refresh event listings for another popular city.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </main>
 
   <div id="footer-container"></div>
@@ -54,6 +159,25 @@
       window.OvationComponents.init({ overlayHeader: false });
       window.OvationAnimations.init();
     });
+
+    function toggleFaq(btn) {
+      const content = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const isExpanded = content.style.maxHeight !== '0px' && content.style.maxHeight !== '';
+      
+      // Close all others
+      document.querySelectorAll('.faq-content').forEach(el => {
+        el.style.maxHeight = '0px';
+      });
+      document.querySelectorAll('.faq-icon').forEach(el => {
+        el.classList.remove('is-open');
+      });
+
+      if (!isExpanded) {
+        content.style.maxHeight = content.scrollHeight + "px";
+        icon.classList.add('is-open');
+      }
+    }
   </script>
 </body>
 </html>

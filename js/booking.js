@@ -50,6 +50,10 @@ class BookingManager {
     this.lastOrder = order;
     if (window.OvationState) {
       window.OvationState.set(ORDER_STORAGE_KEY, order);
+      
+      let allOrders = window.OvationState.get('ovation_all_orders') || [];
+      allOrders.unshift(order);
+      window.OvationState.set('ovation_all_orders', allOrders);
     }
   }
 

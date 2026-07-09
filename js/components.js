@@ -38,10 +38,10 @@ const Components = {
           <a href="index.html" class="site-header__logo">OVATION</a>
           
           <nav class="site-header__nav">
+            <a href="index.html" class="site-header__nav-link">Home</a>
             <a href="events.html" class="site-header__nav-link">Events</a>
-            <a href="events.html?category=Music" class="site-header__nav-link">Music</a>
-            <a href="events.html?category=Sports" class="site-header__nav-link">Sports</a>
-            <a href="events.html?category=Arts" class="site-header__nav-link">Arts</a>
+            <a href="checkout.html" class="site-header__nav-link">Booking</a>
+            <a href="help-center.html" class="site-header__nav-link">Contact</a>
           </nav>
 
           <div class="site-header__actions">
@@ -92,10 +92,10 @@ const Components = {
                 ${renderDropdownItems(selectedCity)}
               </div>
             </div>
+            <a href="index.html" class="site-header__mobile-link">Home</a>
             <a href="events.html" class="site-header__mobile-link">Events</a>
-            <a href="events.html?category=Music" class="site-header__mobile-link">Music</a>
-            <a href="events.html?category=Sports" class="site-header__mobile-link">Sports</a>
-            <a href="events.html?category=Arts" class="site-header__mobile-link">Arts</a>
+            <a href="checkout.html" class="site-header__mobile-link">Booking</a>
+            <a href="help-center.html" class="site-header__mobile-link">Contact</a>
           </nav>
         </div>
       </header>
@@ -149,27 +149,12 @@ const Components = {
     `;
   },
 
-  // Render floating nav
   renderFloatingNav(activePath = '/') {
     return `
-      <div class="floating-nav-wrapper" id="floating-nav-wrapper">
-        <nav class="floating-nav" id="floating-nav">
-          <a href="index.html" class="floating-nav__link ${activePath === '/' || activePath === 'index.html' ? 'is-active' : ''}" aria-label="Home">
-            ${this.icons.home}
-            <span class="floating-nav__link-label">Home</span>
-          </a>
-          
-          <a href="events.html" class="floating-nav__link ${activePath.includes('event') ? 'is-active' : ''}" aria-label="Events">
-            ${this.icons.compass}
-            <span class="floating-nav__link-label">Events</span>
-          </a>
-
-          <span class="floating-nav__separator" aria-hidden="true"></span>
-
-          <button type="button" id="scroll-to-top" aria-label="Back to top" class="floating-nav__top-btn">
-            ${this.icons.arrowUp}
-          </button>
-        </nav>
+      <div class="floating-nav-wrapper" id="floating-nav-wrapper" style="bottom: 2rem; left: auto; right: 2rem; transform: none;">
+        <button type="button" id="scroll-to-top" aria-label="Back to top" class="btn btn--primary" style="border-radius: 50%; width: 3rem; height: 3rem; padding: 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transform: translateY(20px); transition: opacity 0.3s, transform 0.3s; pointer-events: none;">
+          ${this.icons.arrowUp}
+        </button>
       </div>
     `;
   },
@@ -208,9 +193,14 @@ const Components = {
           ${this.icons.arrowUpRight}
         </div>
         
-        <p class="event-card__price">
-          From <strong>${formattedPrice}</strong>
-        </p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+          <p class="event-card__price" style="margin: 0; font-size: 0.875rem;">
+            From <strong style="font-size: 1rem;">${formattedPrice}</strong>
+          </p>
+          <span class="btn btn--primary" style="padding: 0.5rem 1rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.375rem;">
+            ${this.icons.ticket} Book
+          </span>
+        </div>
       </a>
     `;
   },
@@ -441,30 +431,23 @@ const Components = {
 
   setupFloatingNav() {
     const wrapper = document.getElementById('floating-nav-wrapper');
-    const nav = document.getElementById('floating-nav');
     const topBtn = document.getElementById('scroll-to-top');
 
-    if (!wrapper || !nav) return;
+    if (!wrapper || !topBtn) return;
 
     // Visibility on scroll
     const handleScroll = () => {
       const isVisible = window.scrollY > window.innerHeight * 0.6;
       if (isVisible) {
         wrapper.classList.add('is-visible');
-        if (window.gsap) {
-          gsap.to(nav, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" });
-        } else {
-          nav.style.transform = 'translateY(0)';
-          nav.style.opacity = '1';
-        }
+        topBtn.style.opacity = '1';
+        topBtn.style.transform = 'translateY(0)';
+        topBtn.style.pointerEvents = 'auto';
       } else {
         wrapper.classList.remove('is-visible');
-        if (window.gsap) {
-          gsap.to(nav, { y: 120, opacity: 0, duration: 0.5, ease: "power3.out" });
-        } else {
-          nav.style.transform = 'translateY(120px)';
-          nav.style.opacity = '0';
-        }
+        topBtn.style.opacity = '0';
+        topBtn.style.transform = 'translateY(20px)';
+        topBtn.style.pointerEvents = 'none';
       }
     };
 
@@ -534,11 +517,10 @@ const Components = {
         headerEl.outerHTML = this.renderHeader(isOverlay);
         floatingNavEl.outerHTML = this.renderFloatingNav(currentPath);
         // Re-attach listeners
-        this.setupScrollListener();
+        this.setupHeader(isOverlay);
         this.setupFloatingNav();
         this.setupAuthListeners();
         this.setupCityControls();
-        this.setupMobileMenu();
       }
     });
   },
